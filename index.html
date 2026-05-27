@@ -21,6 +21,11 @@
         :root {
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --tp-spoken-color: rgba(78, 205, 196, 0.35);
+            --tp-active-color: #fff;
+            --tp-current-color: #ffe66d;
+            --tp-text-color: rgba(255,255,255,0.5);
+            --tp-bg: #1a1a2e;
         }
 
         html, body {
@@ -31,14 +36,14 @@
 
         body {
             font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Noto Sans SC', sans-serif;
-            background: #1a1a2e;
+            background: var(--tp-bg);
             color: #eee;
             display: flex;
             flex-direction: column;
             -webkit-user-select: none;
             user-select: none;
-            /* 防止 iOS 点击时的灰色半透明遮罩 */
             -webkit-touch-callout: none;
+            transition: background 0.3s;
         }
 
         /* ========== 顶部工具栏 ========== */
@@ -53,6 +58,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.06);
             flex-shrink: 0;
             z-index: 10;
+            transition: background 0.3s;
         }
 
         .toolbar-title {
@@ -83,7 +89,6 @@
             font-size: 17px;
             cursor: pointer;
             transition: background 0.15s;
-            /* 防止 iOS 点击闪烁 */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -107,40 +112,39 @@
             -webkit-overflow-scrolling: touch;
             font-size: 26px;
             line-height: 1.9;
-            color: rgba(255,255,255,0.5);
+            color: var(--tp-text-color);
             word-wrap: break-word;
             white-space: pre-wrap;
-            /* iOS 滚动优化 */
             overscroll-behavior: contain;
+            transition: font-size 0.15s, letter-spacing 0.15s, color 0.3s;
         }
 
         #teleprompter .word {
             transition: color 0.12s ease;
             display: inline;
-            letter-spacing: 0.3px;
         }
 
         #teleprompter .word.spoken {
-            color: rgba(78, 205, 196, 0.35);
+            color: var(--tp-spoken-color);
         }
 
         #teleprompter .word.active {
-            color: #fff;
+            color: var(--tp-active-color);
             font-weight: 500;
         }
 
         #teleprompter .word.current {
-            color: #ffe66d;
+            color: var(--tp-current-color);
             font-weight: 700;
             text-shadow: 0 0 20px rgba(255, 230, 109, 0.15);
         }
 
-        /* 词间空格 */
         .word-gap {
             display: inline;
             white-space: pre;
         }
 
+        /* ========== 空状态 ========== */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -151,24 +155,9 @@
             text-align: center;
         }
 
-        .empty-state-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
-            opacity: 0.35;
-        }
-
-        .empty-state h2 {
-            font-size: 20px;
-            margin-bottom: 8px;
-            color: #999;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.7;
-        }
+        .empty-state-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.35; }
+        .empty-state h2 { font-size: 20px; margin-bottom: 8px; color: #999; font-weight: 600; }
+        .empty-state p { font-size: 14px; color: #555; line-height: 1.7; }
 
         .empty-state-actions {
             display: flex;
@@ -191,25 +180,10 @@
             gap: 8px;
         }
 
-        .empty-state-btn.primary {
-            background: #667eea;
-            color: #fff;
-        }
-
-        .empty-state-btn.primary:active {
-            background: #5a6fd6;
-            transform: scale(0.96);
-        }
-
-        .empty-state-btn.secondary {
-            background: rgba(255,255,255,0.06);
-            color: #aaa;
-        }
-
-        .empty-state-btn.secondary:active {
-            background: rgba(255,255,255,0.12);
-            transform: scale(0.96);
-        }
+        .empty-state-btn.primary { background: #667eea; color: #fff; }
+        .empty-state-btn.primary:active { background: #5a6fd6; transform: scale(0.96); }
+        .empty-state-btn.secondary { background: rgba(255,255,255,0.06); color: #aaa; }
+        .empty-state-btn.secondary:active { background: rgba(255,255,255,0.12); transform: scale(0.96); }
 
         /* ========== 底部控制栏 ========== */
         .controls {
@@ -224,6 +198,7 @@
             align-items: center;
             gap: 10px;
             z-index: 10;
+            transition: background 0.3s;
         }
 
         .btn-record {
@@ -249,10 +224,7 @@
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .btn-record.recording {
-            border-color: #ff4757;
-        }
-
+        .btn-record.recording { border-color: #ff4757; }
         .btn-record.recording .btn-record-inner {
             border-radius: 4px;
             width: 16px;
@@ -285,13 +257,8 @@
             line-height: 1.4;
         }
 
-        .status-text.highlight {
-            color: #4ecdc4 !important;
-        }
-
-        .status-text.error {
-            color: #ff4757 !important;
-        }
+        .status-text.highlight { color: #4ecdc4 !important; }
+        .status-text.error { color: #ff4757 !important; }
 
         /* ========== 速度控制 ========== */
         .speed-control {
@@ -302,10 +269,7 @@
             flex-shrink: 0;
         }
 
-        .speed-control label {
-            font-size: 10px;
-            color: #555;
-        }
+        .speed-control label { font-size: 10px; color: #555; }
 
         .speed-slider {
             -webkit-appearance: none;
@@ -336,7 +300,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* ========== 模态框 ========== */
+        /* ========== 模态框（通用） ========== */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -350,9 +314,7 @@
             padding: 0;
         }
 
-        .modal-overlay.show {
-            display: flex;
-        }
+        .modal-overlay.show { display: flex; }
 
         .modal {
             background: #1e1e3a;
@@ -364,6 +326,7 @@
             padding: 20px 20px calc(20px + var(--safe-bottom));
             box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
             animation: slide-up 0.3s ease-out;
+            transition: background 0.3s;
         }
 
         @keyframes slide-up {
@@ -372,19 +335,13 @@
         }
 
         .modal-handle {
-            width: 36px;
-            height: 4px;
+            width: 36px; height: 4px;
             border-radius: 2px;
             background: rgba(255,255,255,0.12);
             margin: 0 auto 16px;
         }
 
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #eee;
-        }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #eee; }
 
         .modal-textarea {
             width: 100%;
@@ -403,15 +360,9 @@
             -webkit-appearance: none;
         }
 
-        .modal-textarea:focus {
-            border-color: #667eea;
-        }
+        .modal-textarea:focus { border-color: #667eea; }
 
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 
         .modal-btn {
             flex: 1;
@@ -425,33 +376,17 @@
             text-align: center;
         }
 
-        .modal-btn:active {
-            transform: scale(0.97);
-        }
-
-        .modal-btn.cancel {
-            background: rgba(255,255,255,0.06);
-            color: #aaa;
-        }
-
-        .modal-btn.cancel:active {
-            background: rgba(255,255,255,0.12);
-        }
-
-        .modal-btn.confirm {
-            background: #667eea;
-            color: #fff;
-        }
-
-        .modal-btn.confirm:active {
-            background: #5a6fd6;
-        }
+        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn.cancel { background: rgba(255,255,255,0.06); color: #aaa; }
+        .modal-btn.cancel:active { background: rgba(255,255,255,0.12); }
+        .modal-btn.confirm { background: #667eea; color: #fff; }
+        .modal-btn.confirm:active { background: #5a6fd6; }
+        .modal-btn.confirm-small { background: #667eea; color: #fff; padding: 10px 16px; font-size: 14px; border-radius: 10px; flex: 0; }
 
         /* ========== 进度条 ========== */
         .progress-bar {
             height: 2px;
             background: rgba(255,255,255,0.04);
-            position: relative;
             flex-shrink: 0;
         }
 
@@ -462,98 +397,160 @@
             transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ========== 滚动条美化 ========== */
-        #teleprompter::-webkit-scrollbar {
-            width: 2px;
-        }
+        /* ========== 滚动条 ========== */
+        #teleprompter::-webkit-scrollbar { width: 2px; }
+        #teleprompter::-webkit-scrollbar-track { background: transparent; }
+        #teleprompter::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
 
-        #teleprompter::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        /* ========== 设置面板 ========== */
+        .settings-group { margin-bottom: 20px; }
+        .settings-group-title { font-size: 13px; font-weight: 600; color: #999; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .settings-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .settings-label { font-size: 14px; color: #ccc; min-width: 56px; flex-shrink: 0; }
+        .settings-value { font-size: 13px; color: #888; min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
 
-        #teleprompter::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.06);
+        .settings-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px;
+            background: rgba(255,255,255,0.08);
             border-radius: 2px;
+            outline: none;
         }
 
-        /* ========== iPhone 全面屏适配 ========== */
-        /* iPhone 12/13/14/15/16 系列 (390pt+) */
-        @media (min-width: 375px) and (max-width: 430px) {
-            #teleprompter {
-                font-size: 24px;
-                padding: 20px 16px 36px;
-            }
+        .settings-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
         }
 
-        /* iPhone SE / 小屏 (320pt-374pt) */
-        @media (max-width: 374px) {
-            #teleprompter {
-                font-size: 20px;
-                line-height: 1.7;
-                padding: 16px 12px 30px;
-            }
-            .toolbar-title { font-size: 15px; }
-            .btn-record { width: 46px; height: 46px; }
-            .btn-record-inner { width: 20px; height: 20px; }
-            .controls { padding: 8px 12px; }
-            .speed-slider { width: 40px; }
+        /* 切换开关 */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 26px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.25s;
+            flex-shrink: 0;
         }
 
-        /* iPhone Plus/Pro Max 大屏 (>=430pt) */
-        @media (min-width: 430px) {
-            #teleprompter {
-                font-size: 30px;
-                padding: 32px 24px 50px;
-            }
+        .toggle-switch.active { background: #667eea; }
+
+        .toggle-switch-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: #ccc;
+            transition: all 0.25s;
         }
 
-        /* iPad */
-        @media (min-width: 768px) {
-            #teleprompter {
-                font-size: 34px;
-                padding: 40px 32px 60px;
-                max-width: 800px;
-                margin: 0 auto;
-            }
+        .toggle-switch.active .toggle-switch-knob {
+            left: 21px;
+            background: #fff;
         }
 
-        /* 深色用户偏好 */
-        @media (prefers-color-scheme: light) {
-            body { background: #f5f5f7; }
-            .toolbar { background: rgba(245, 245, 247, 0.96); border-bottom-color: rgba(0,0,0,0.06); }
-            .controls { background: rgba(245, 245, 247, 0.96); border-top-color: rgba(0,0,0,0.06); }
-            .toolbar-title { background: linear-gradient(135deg, #5a6fd6, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-            #teleprompter { color: rgba(0,0,0,0.35); }
-            #teleprompter .word.spoken { color: rgba(90, 111, 214, 0.3); }
-            #teleprompter .word.active { color: #1a1a2e; }
-            #teleprompter .word.current { color: #5a6fd6; text-shadow: none; }
-            .empty-state h2 { color: #666; }
-            .empty-state p { color: #999; }
-            .toolbar-btn { color: #555; background: rgba(0,0,0,0.04); }
-            .status-text { color: #999; }
-            .speed-control label { color: #aaa; }
-            .speed-slider { background: rgba(0,0,0,0.08); }
-            .speed-value { color: #999; }
-            .modal { background: #f0f0f5; }
-            .modal-title { color: #1a1a2e; }
-            .modal-textarea { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); color: #1a1a2e; }
-            .modal-btn.cancel { background: rgba(0,0,0,0.06); color: #666; }
-            .progress-bar { background: rgba(0,0,0,0.04); }
-            .btn-record { border-color: rgba(0,0,0,0.1); }
-            .empty-state-btn.secondary { background: rgba(0,0,0,0.06); color: #666; }
+        /* 背景颜色预设 */
+        .bg-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
-        /* 选中文本样式 */
-        ::selection {
-            background: rgba(102, 126, 234, 0.3);
+        .bg-preset {
+            border-radius: 12px;
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
         }
 
-        /* 防止 iOS 橡皮筋滚动 */
-        .teleprompter-wrapper {
-            overscroll-behavior: contain;
+        .bg-preset:active { transform: scale(0.95); }
+        .bg-preset.active { border-color: #667eea; }
+        .bg-preset-dark { background: #1a1a2e; color: rgba(255,255,255,0.5); }
+        .bg-preset-light { background: #f5f5f7; color: rgba(0,0,0,0.4); }
+        .bg-preset-warm { background: #2d1f14; color: rgba(255,220,180,0.5); }
+        .bg-preset-green { background: #1a2e1a; color: rgba(180,255,180,0.5); }
+
+        .wp-color-dot {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            border: 2px solid rgba(255,255,255,0.15);
         }
 
-        /* 完成提示 */
+        .bg-preset-dark .wp-color-dot { background: #1a1a2e; border-color: rgba(255,255,255,0.15); }
+        .bg-preset-light .wp-color-dot { background: #f5f5f7; border-color: rgba(0,0,0,0.1); }
+        .bg-preset-warm .wp-color-dot { background: #2d1f14; border-color: rgba(255,220,180,0.2); }
+        .bg-preset-green .wp-color-dot { background: #1a2e1a; border-color: rgba(180,255,180,0.15); }
+
+        .wp-preset-name { font-size: 11px; margin-top: 4px; opacity: 0.6; }
+
+        /* 字体颜色预设 */
+        .color-presets {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-preset {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .color-preset:active { transform: scale(0.85); }
+        .color-preset.active { border-color: #667eea; box-shadow: 0 0 0 2px #667eea; }
+
+        /* ========== 回到顶部 FAB ========== */
+        .fab-back-top {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0.6);
+            pointer-events: none;
+            transition: all 0.25s;
+            z-index: 5;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .fab-back-top.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .fab-back-top:active { transform: scale(0.88); }
+
+        /* ========== 完成提示 ========== */
         .done-indicator {
             position: absolute;
             inset: 0;
@@ -569,21 +566,35 @@
             transition: opacity 0.5s;
         }
 
-        .done-indicator.show {
-            opacity: 1;
-            pointer-events: auto;
+        .done-indicator.show { opacity: 1; pointer-events: auto; }
+        .done-indicator-icon { font-size: 48px; margin-bottom: 12px; }
+        .done-indicator-text { font-size: 18px; color: #aaa; font-weight: 600; }
+
+        /* ========== 响应式 ========== */
+        @media (min-width: 375px) and (max-width: 430px) {
+            #teleprompter { font-size: 24px; padding: 20px 16px 36px; }
         }
 
-        .done-indicator-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+        @media (max-width: 374px) {
+            #teleprompter { font-size: 20px; line-height: 1.7; padding: 16px 12px 30px; }
+            .toolbar-title { font-size: 15px; }
+            .btn-record { width: 46px; height: 46px; }
+            .btn-record-inner { width: 20px; height: 20px; }
+            .controls { padding: 8px 12px; gap: 6px; }
+            .speed-slider { width: 40px; }
         }
 
-        .done-indicator-text {
-            font-size: 18px;
-            color: #aaa;
-            font-weight: 600;
+        @media (min-width: 430px) {
+            #teleprompter { font-size: 30px; padding: 32px 24px 50px; }
         }
+
+        @media (min-width: 768px) {
+            #teleprompter { font-size: 34px; padding: 40px 32px 60px; max-width: 800px; margin: 0 auto; }
+        }
+
+        /* 选中文本 */
+        ::selection { background: rgba(102, 126, 234, 0.3); }
+        .teleprompter-wrapper { overscroll-behavior: contain; }
     </style>
 </head>
 <body>
@@ -592,9 +603,10 @@
     <div class="toolbar">
         <div class="toolbar-title">🎤 AI 提词器</div>
         <div class="toolbar-actions">
-            <button class="toolbar-btn" id="btnImportTxt" title="导入TXT文件" aria-label="导入TXT文件">📂</button>
-            <button class="toolbar-btn" id="btnPasteText" title="粘贴文字" aria-label="粘贴文字">✏️</button>
-            <button class="toolbar-btn" id="btnReset" title="重置" aria-label="重置">🔄</button>
+            <button class="toolbar-btn" id="btnImportTxt" title="导入TXT文件">📂</button>
+            <button class="toolbar-btn" id="btnPasteText" title="粘贴文字">✏️</button>
+            <button class="toolbar-btn" id="btnSettings" title="设置">⚙️</button>
+            <button class="toolbar-btn" id="btnReset" title="重置">🔄</button>
         </div>
     </div>
 
@@ -605,9 +617,8 @@
 
     <!-- ========== 提词器主体 ========== -->
     <div class="teleprompter-wrapper" id="teleprompterWrapper">
-        <div id="teleprompter">
-            <!-- 空状态由 JS 渲染 -->
-        </div>
+        <div id="teleprompter"></div>
+        <button class="fab-back-top" id="fabBackTop" title="回到顶部">⬆</button>
         <div class="done-indicator" id="doneIndicator">
             <div class="done-indicator-icon">🎉</div>
             <div class="done-indicator-text">全部朗读完成</div>
@@ -619,9 +630,7 @@
         <button class="btn-record" id="btnRecord" aria-label="开始/停止录音">
             <div class="btn-record-inner"></div>
         </button>
-
         <div class="status-text" id="statusText">💡 准备就绪</div>
-
         <div class="speed-control">
             <label>速度</label>
             <input type="range" class="speed-slider" id="speedSlider" min="0.5" max="2.0" step="0.1" value="1.0" aria-label="滚动速度">
@@ -642,49 +651,142 @@
         </div>
     </div>
 
-    <!-- ========== 文件导入（隐藏） ========== -->
     <input type="file" id="fileInput" accept=".txt,.text,text/plain" style="display:none">
+
+    <!-- ========== 设置模态框 ========== -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">⚙️ 显示设置</div>
+
+            <!-- 自动下滑 -->
+            <div class="settings-group">
+                <div class="settings-group-title">自动下滑</div>
+                <div class="settings-row">
+                    <span class="settings-label">开启</span>
+                    <div class="toggle-switch" id="autoScrollToggle">
+                        <div class="toggle-switch-knob"></div>
+                    </div>
+                    <span style="font-size:12px;color:#666;" id="autoScrollStatus">关闭</span>
+                </div>
+                <div class="settings-row" style="margin-top:8px;">
+                    <span class="settings-label">速度</span>
+                    <input type="range" class="settings-slider" id="autoScrollSpeedSlider" min="1" max="10" step="1" value="4" aria-label="自动下滑速度">
+                    <span class="settings-value" id="autoScrollSpeedValue">4</span>
+                </div>
+            </div>
+
+            <!-- 字体大小 -->
+            <div class="settings-group">
+                <div class="settings-group-title">字体大小</div>
+                <div class="settings-row">
+                    <span class="settings-label">Aa</span>
+                    <input type="range" class="settings-slider" id="fontSizeSlider" min="14" max="42" step="1" value="26">
+                    <span class="settings-value" id="fontSizeValue">26</span>
+                </div>
+            </div>
+
+            <!-- 字间距 -->
+            <div class="settings-group">
+                <div class="settings-group-title">字间距</div>
+                <div class="settings-row">
+                    <span class="settings-label">间距</span>
+                    <input type="range" class="settings-slider" id="letterSpacingSlider" min="0" max="8" step="0.5" value="0.3">
+                    <span class="settings-value" id="letterSpacingValue">0.3</span>
+                </div>
+            </div>
+
+            <!-- 字体颜色 -->
+            <div class="settings-group">
+                <div class="settings-group-title">字体颜色</div>
+                <div class="color-presets" id="colorPresets">
+                    <div class="color-preset active" data-color="default" style="background:linear-gradient(135deg,#667eea,#764ba2);" title="默认渐变"></div>
+                    <div class="color-preset" data-color="#ffe66d" style="background:#ffe66d;" title="暖黄"></div>
+                    <div class="color-preset" data-color="#4ecdc4" style="background:#4ecdc4;" title="青绿"></div>
+                    <div class="color-preset" data-color="#ff6b6b" style="background:#ff6b6b;" title="珊瑚红"></div>
+                    <div class="color-preset" data-color="#a29bfe" style="background:#a29bfe;" title="淡紫"></div>
+                    <div class="color-preset" data-color="#fd79a8" style="background:#fd79a8;" title="粉红"></div>
+                    <div class="color-preset" data-color="#ffffff" style="background:#fff;border:2px solid rgba(255,255,255,0.2);" title="纯白"></div>
+                    <div class="color-preset" data-color="#dfe6e9" style="background:#dfe6e9;border:2px solid rgba(255,255,255,0.2);" title="浅灰"></div>
+                </div>
+            </div>
+
+            <!-- 背景颜色 -->
+            <div class="settings-group">
+                <div class="settings-group-title">背景颜色</div>
+                <div class="bg-presets" id="bgPresets">
+                    <div class="bg-preset bg-preset-dark active" data-bg="dark"><div class="wp-color-dot"></div><div class="wp-preset-name">深色</div></div>
+                    <div class="bg-preset bg-preset-light" data-bg="light"><div class="wp-color-dot"></div><div class="wp-preset-name">浅色</div></div>
+                    <div class="bg-preset bg-preset-warm" data-bg="warm"><div class="wp-color-dot"></div><div class="wp-preset-name">暖色</div></div>
+                    <div class="bg-preset bg-preset-green" data-bg="green"><div class="wp-color-dot"></div><div class="wp-preset-name">护眼</div></div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn confirm" id="settingsDone">完成</button>
+            </div>
+        </div>
+    </div>
 
 <script>
 (function() {
     'use strict';
 
-    // ============================================================
+    // ================================
     //  DOM 引用
-    // ============================================================
-    const teleprompter = document.getElementById('teleprompter');
-    const wrapper = document.getElementById('teleprompterWrapper');
-    const btnRecord = document.getElementById('btnRecord');
-    const statusText = document.getElementById('statusText');
-    const progressFill = document.getElementById('progressFill');
-    const speedSlider = document.getElementById('speedSlider');
-    const speedValue = document.getElementById('speedValue');
-    const btnImportTxt = document.getElementById('btnImportTxt');
-    const btnPasteText = document.getElementById('btnPasteText');
-    const btnReset = document.getElementById('btnReset');
-    const fileInput = document.getElementById('fileInput');
-    const textModal = document.getElementById('textModal');
-    const textInput = document.getElementById('textInput');
-    const modalCancel = document.getElementById('modalCancel');
-    const modalConfirm = document.getElementById('modalConfirm');
-    const doneIndicator = document.getElementById('doneIndicator');
+    // ================================
+    var teleprompter = document.getElementById('teleprompter');
+    var wrapper = document.getElementById('teleprompterWrapper');
+    var btnRecord = document.getElementById('btnRecord');
+    var statusText = document.getElementById('statusText');
+    var progressFill = document.getElementById('progressFill');
+    var speedSlider = document.getElementById('speedSlider');
+    var speedValue = document.getElementById('speedValue');
+    var btnImportTxt = document.getElementById('btnImportTxt');
+    var btnPasteText = document.getElementById('btnPasteText');
+    var btnReset = document.getElementById('btnReset');
+    var fileInput = document.getElementById('fileInput');
+    var textModal = document.getElementById('textModal');
+    var textInput = document.getElementById('textInput');
+    var modalCancel = document.getElementById('modalCancel');
+    var modalConfirm = document.getElementById('modalConfirm');
+    var doneIndicator = document.getElementById('doneIndicator');
+    var fabBackTop = document.getElementById('fabBackTop');
 
-    // ============================================================
+    // 设置面板
+    var settingsModal = document.getElementById('settingsModal');
+    var btnSettings = document.getElementById('btnSettings');
+    var settingsDone = document.getElementById('settingsDone');
+    var fontSizeSlider = document.getElementById('fontSizeSlider');
+    var fontSizeValue = document.getElementById('fontSizeValue');
+    var letterSpacingSlider = document.getElementById('letterSpacingSlider');
+    var letterSpacingValue = document.getElementById('letterSpacingValue');
+    var bgPresets = document.getElementById('bgPresets');
+    var colorPresets = document.getElementById('colorPresets');
+    var autoScrollToggle = document.getElementById('autoScrollToggle');
+    var autoScrollStatus = document.getElementById('autoScrollStatus');
+    var autoScrollSpeedSlider = document.getElementById('autoScrollSpeedSlider');
+    var autoScrollSpeedValue = document.getElementById('autoScrollSpeedValue');
+
+    // ================================
     //  状态
-    // ============================================================
-    let words = [];
-    let wordElements = [];
-    let currentWordIndex = -1;
-    let isRecording = false;
-    let recognition = null;
-    let isInitialized = false;
-    let scrollTimeout = null;
-    let speechRestartTimer = null;
-    let speedFactor = 1.0;
+    // ================================
+    var words = [];
+    var wordElements = [];
+    var currentWordIndex = -1;
+    var isRecording = false;
+    var recognition = null;
+    var isInitialized = false;
+    var scrollTimeout = null;
+    var speechRestartTimer = null;
+    var autoScrollTimer = null;
+    var isAutoScrolling = false;
+    var currentBg = 'dark';
+    var currentColor = 'default';
 
-    // ============================================================
+    // ================================
     //  工具函数
-    // ============================================================
+    // ================================
     function setStatus(msg, type) {
         statusText.textContent = msg;
         statusText.className = 'status-text';
@@ -692,57 +794,91 @@
         else if (type === 'error') statusText.classList.add('error');
     }
 
-    // 更新进度条
     function updateProgress() {
-        if (words.length === 0) {
-            progressFill.style.width = '0%';
-            return;
-        }
-        const pct = ((currentWordIndex + 1) / words.length) * 100;
-        progressFill.style.width = Math.min(pct, 100) + '%';
+        if (words.length === 0) { progressFill.style.width = '0%'; return; }
+        progressFill.style.width = Math.min(((currentWordIndex + 1) / words.length) * 100, 100) + '%';
     }
 
-    // 标准化文本：去标点、转小写、去空格
     function normalizeText(text) {
-        return text.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g, '')
-                   .toLowerCase()
-                   .trim();
+        return text.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g, '').toLowerCase().trim();
     }
 
     function normalizeChar(c) {
         return c.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g, '').toLowerCase();
     }
 
-    // 分词：中文逐字，英文逐词，数字连续
     function tokenize(text) {
-        const tokens = [];
-        let i = 0;
+        var tokens = [];
+        var i = 0;
         while (i < text.length) {
-            const ch = text[i];
+            var ch = text[i];
             if (/[\s\r\n]/.test(ch)) { i++; continue; }
-            // CJK 字符
-            if (/[\u4e00-\u9fff]/.test(ch)) {
-                tokens.push(ch);
-                i++;
-            } else if (/[a-zA-Z]/.test(ch)) {
-                let word = '';
+            if (/[\u4e00-\u9fff]/.test(ch)) { tokens.push(ch); i++; }
+            else if (/[a-zA-Z]/.test(ch)) {
+                var word = '';
                 while (i < text.length && /[a-zA-Z']/.test(text[i])) { word += text[i]; i++; }
                 tokens.push(word);
             } else if (/[0-9]/.test(ch)) {
-                let num = '';
+                var num = '';
                 while (i < text.length && /[0-9]/.test(text[i])) { num += text[i]; i++; }
                 tokens.push(num);
-            } else {
-                tokens.push(ch);
-                i++;
-            }
+            } else { tokens.push(ch); i++; }
         }
         return tokens;
     }
 
-    // ============================================================
+    // ================================
+    //  CSS 变量管理
+    // ================================
+    var root = document.documentElement;
+
+    function applyBgTheme(name) {
+        var themes = {
+            dark:  { bg: '#1a1a2e', spoken: 'rgba(78, 205, 196, 0.35)', active: '#fff', current: '#ffe66d', text: 'rgba(255,255,255,0.5)', modal: '#1e1e3a' },
+            light: { bg: '#f5f5f7', spoken: 'rgba(90, 111, 214, 0.3)', active: '#1a1a2e', current: '#5a6fd6', text: 'rgba(0,0,0,0.35)', modal: '#f0f0f5' },
+            warm:  { bg: '#2d1f14', spoken: 'rgba(255, 200, 150, 0.3)', active: '#fff8f0', current: '#ffb88c', text: 'rgba(255,220,180,0.55)', modal: '#362818' },
+            green: { bg: '#1a2e1a', spoken: 'rgba(150, 255, 150, 0.25)', active: '#f0fff0', current: '#90ee90', text: 'rgba(180,255,180,0.5)', modal: '#223822' }
+        };
+        var theme = themes[name];
+        if (!theme) return;
+        currentBg = name;
+        root.style.setProperty('--tp-bg', theme.bg);
+        root.style.setProperty('--tp-spoken-color', theme.spoken);
+        root.style.setProperty('--tp-active-color', theme.active);
+        root.style.setProperty('--tp-current-color', theme.current);
+        root.style.setProperty('--tp-text-color', theme.text);
+        document.body.style.backgroundColor = theme.bg;
+
+        var toolbarEl = document.querySelector('.toolbar');
+        var controlsEl = document.querySelector('.controls');
+        if (toolbarEl) toolbarEl.style.backgroundColor = theme.bg + 'f5';
+        if (controlsEl) controlsEl.style.backgroundColor = theme.bg + 'f5';
+
+        // 模态框背景
+        var modalEls = document.querySelectorAll('.modal');
+        for (var mi = 0; mi < modalEls.length; mi++) {
+            modalEls[mi].style.backgroundColor = theme.modal;
+        }
+    }
+
+    function applyFontColor(color) {
+        currentColor = color;
+        if (color === 'default') {
+            root.style.setProperty('--tp-current-color', currentBg === 'dark' ? '#ffe66d' : currentBg === 'light' ? '#5a6fd6' : currentBg === 'warm' ? '#ffb88c' : '#90ee90');
+            // remove inline color
+            var words = document.querySelectorAll('#teleprompter .word.current');
+            for (var i = 0; i < words.length; i++) {
+                words[i].style.color = '';
+            }
+        } else {
+            root.style.setProperty('--tp-current-color', color);
+        }
+        try { localStorage.setItem('tp_fontColor', color); } catch(e) {}
+    }
+
+    // ================================
     //  加载文本
-    // ============================================================
+    // ================================
     function loadText(text) {
         teleprompter.innerHTML = '';
         words = [];
@@ -750,36 +886,27 @@
         currentWordIndex = -1;
         doneIndicator.classList.remove('show');
 
-        if (!text || text.trim().length === 0) {
-            showEmptyState();
-            return;
-        }
+        if (!text || text.trim().length === 0) { showEmptyState(); return; }
 
-        const tokens = tokenize(text);
-        if (tokens.length === 0) {
-            showEmptyState();
-            return;
-        }
+        var tokens = tokenize(text);
+        if (tokens.length === 0) { showEmptyState(); return; }
 
-        words = tokens.map((t, idx) => ({ text: t, index: idx }));
+        words = tokens.map(function(t, idx) { return { text: t, index: idx }; });
 
-        // 构建 DOM
-        tokens.forEach((token, idx) => {
-            const span = document.createElement('span');
+        for (var ti = 0; ti < tokens.length; ti++) {
+            var span = document.createElement('span');
             span.className = 'word';
-            span.textContent = token;
-            span.dataset.index = idx;
+            span.textContent = tokens[ti];
+            span.dataset.index = ti;
             teleprompter.appendChild(span);
             wordElements.push(span);
-
-            // 词间加空格（视觉分隔）
-            if (idx < tokens.length - 1) {
-                const space = document.createElement('span');
+            if (ti < tokens.length - 1) {
+                var space = document.createElement('span');
                 space.className = 'word-gap';
                 space.textContent = ' ';
                 teleprompter.appendChild(space);
             }
-        });
+        }
 
         isInitialized = true;
         currentWordIndex = -1;
@@ -788,63 +915,122 @@
     }
 
     function showEmptyState() {
-        teleprompter.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📝</div>
-                <h2>还没有内容</h2>
-                <p>
-                    请先导入你的稿件
-                </p>
-                <div class="empty-state-actions">
-                    <button class="empty-state-btn primary" id="emptyImportBtn">📂 导入 TXT 文件</button>
-                    <button class="empty-state-btn secondary" id="emptyPasteBtn">✏️ 粘贴文字</button>
-                </div>
-            </div>
-        `;
+        teleprompter.innerHTML = [
+            '<div class="empty-state">',
+            '<div class="empty-state-icon">📝</div>',
+            '<h2>还没有内容</h2>',
+            '<p>请先导入你的稿件</p>',
+            '<div class="empty-state-actions">',
+            '<button class="empty-state-btn primary" id="emptyImportBtn">📂 导入 TXT 文件</button>',
+            '<button class="empty-state-btn secondary" id="emptyPasteBtn">✏️ 粘贴文字</button>',
+            '</div></div>'
+        ].join('');
         isInitialized = false;
         words = [];
         wordElements = [];
         currentWordIndex = -1;
         progressFill.style.width = '0%';
         doneIndicator.classList.remove('show');
-
-        // 绑定空状态按钮
-        const emptyImport = document.getElementById('emptyImportBtn');
-        const emptyPaste = document.getElementById('emptyPasteBtn');
-        if (emptyImport) emptyImport.addEventListener('click', function() { fileInput.click(); });
-        if (emptyPaste) emptyPaste.addEventListener('click', showTextModal);
+        var ei = document.getElementById('emptyImportBtn');
+        var ep = document.getElementById('emptyPasteBtn');
+        if (ei) ei.addEventListener('click', function() { fileInput.click(); });
+        if (ep) ep.addEventListener('click', showTextModal);
     }
 
-    // ============================================================
+    // ================================
+    //  自动下滑
+    // ================================
+    function startAutoScroll() {
+        if (autoScrollTimer) clearInterval(autoScrollTimer);
+        isAutoScrolling = true;
+        var speed = parseInt(autoScrollSpeedSlider.value);
+        // speed 1-10 => interval 120-30ms, step 3-8px
+        var interval = Math.max(30, 130 - speed * 10);
+        var step = Math.max(2, speed * 0.8);
+
+        autoScrollTimer = setInterval(function() {
+            if (!isAutoScrolling) return;
+            teleprompter.scrollTop += step;
+            // 检测是否到顶部
+            if (teleprompter.scrollTop <= 0) {
+                // 到顶了不用特殊处理
+            }
+            // 检查是否到底
+            if (teleprompter.scrollTop + teleprompter.clientHeight >= teleprompter.scrollHeight - 2) {
+                // 到底，回到顶部
+                goToTop();
+            }
+            // FAB 显示状态更新
+            updateFabVisibility();
+        }, interval);
+    }
+
+    function stopAutoScroll() {
+        isAutoScrolling = false;
+        if (autoScrollTimer) { clearInterval(autoScrollTimer); autoScrollTimer = null; }
+    }
+
+    function toggleAutoScroll() {
+        var active = autoScrollToggle.classList.toggle('active');
+        autoScrollStatus.textContent = active ? '开启' : '关闭';
+        if (active) {
+            if (isInitialized && words.length > 0) {
+                startAutoScroll();
+                setStatus('⏬ 自动下滑中...', 'highlight');
+            } else {
+                autoScrollToggle.classList.remove('active');
+                autoScrollStatus.textContent = '关闭';
+                setStatus('📝 请先导入稿件', 'error');
+            }
+        } else {
+            stopAutoScroll();
+            setStatus('⏸️ 已暂停下滑', '');
+        }
+        try { localStorage.setItem('tp_autoScroll', active ? 'on' : 'off'); } catch(e) {}
+    }
+
+    function goToTop() {
+        stopAutoScroll();
+        teleprompter.scrollTo({ top: 0, behavior: 'smooth' });
+        fabBackTop.classList.remove('show');
+        // 如果自动下滑开关开着，重新开始
+        if (autoScrollToggle.classList.contains('active') && isInitialized) {
+            setTimeout(function() {
+                if (autoScrollToggle.classList.contains('active')) startAutoScroll();
+            }, 400);
+        }
+    }
+
+    function updateFabVisibility() {
+        if (teleprompter.scrollTop > wrapper.clientHeight * 0.6) {
+            fabBackTop.classList.add('show');
+        } else {
+            fabBackTop.classList.remove('show');
+        }
+    }
+
+    // ================================
     //  滚动
-    // ============================================================
+    // ================================
     function scrollToWord(index) {
         if (scrollTimeout) clearTimeout(scrollTimeout);
-
-        scrollTimeout = setTimeout(() => {
-            const el = wordElements[index];
+        scrollTimeout = setTimeout(function() {
+            var el = wordElements[index];
             if (!el) return;
-
-            const wrapperRect = wrapper.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-
-            // 让当前词位于屏幕上方 35% 位置（给下方文字更多可视空间）
-            const targetY = wrapperRect.height * 0.35;
-            const currentOffset = elRect.top - wrapperRect.top;
-            const scrollTarget = wrapper.scrollTop + currentOffset - targetY;
-
-            wrapper.scrollTo({
-                top: Math.max(0, scrollTarget),
-                behavior: 'smooth'
-            });
+            var wrapperRect = wrapper.getBoundingClientRect();
+            var elRect = el.getBoundingClientRect();
+            var targetY = wrapperRect.height * 0.35;
+            var currentOffset = elRect.top - wrapperRect.top;
+            var scrollTarget = wrapper.scrollTop + currentOffset - targetY;
+            wrapper.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
         }, 80);
     }
 
-    // ============================================================
-    //  朗读状态更新
-    // ============================================================
+    // ================================
+    //  朗读状态
+    // ================================
     function updateSpokenRange(from, to) {
-        for (let i = from; i <= to && i < wordElements.length; i++) {
+        for (var i = from; i <= to && i < wordElements.length; i++) {
             wordElements[i].classList.remove('active', 'current', 'spoken');
             wordElements[i].classList.add('spoken');
         }
@@ -854,78 +1040,60 @@
         }
     }
 
-    // ============================================================
-    //  语音匹配（核心）
-    // ============================================================
+    // ================================
+    //  语音识别（优化版：更快响应）
+    // ================================
     function processSpokenText(spokenText) {
         if (!isInitialized || words.length === 0) return;
-
-        const normalized = normalizeText(spokenText);
+        var normalized = normalizeText(spokenText);
         if (!normalized) return;
 
-        const searchStart = Math.max(0, currentWordIndex + 1);
-        const searchEnd = words.length;
-        const spokenChars = normalized.split('');
+        var searchStart = Math.max(0, currentWordIndex + 1);
+        var searchEnd = words.length;
+        var spokenChars = normalized.split('');
 
-        let bestMatchEnd = -1;
-        let bestMatchLen = 0;
+        var bestMatchEnd = -1;
+        var bestMatchLen = 0;
 
-        // 滑动窗口匹配：找到与语音最佳匹配的连续片段
-        for (let start = searchStart; start < searchEnd; start++) {
-            let matched = 0;
-            let sp = 0;
-            let wp = start;
-
+        for (var start = searchStart; start < searchEnd; start++) {
+            var matched = 0, sp = 0, wp = start;
             while (sp < spokenChars.length && wp < searchEnd) {
-                const wChar = normalizeChar(words[wp].text);
-                const sChar = spokenChars[sp];
-
-                if (wChar === sChar) {
-                    matched++;
-                    sp++;
-                    wp++;
-                } else {
-                    // 跳过原文中的标点
+                var wChar = normalizeChar(words[wp].text);
+                var sChar = spokenChars[sp];
+                if (wChar === sChar) { matched++; sp++; wp++; }
+                else {
                     if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(wChar)) { wp++; continue; }
-                    // 跳过语音中的非文字字符
                     if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(sChar)) { sp++; continue; }
                     break;
                 }
             }
-
             if (matched > bestMatchLen) {
                 bestMatchLen = matched;
                 bestMatchEnd = start + matched - 1;
             }
-
-            // 完全匹配则提前结束
             if (matched >= spokenChars.length) break;
         }
 
         if (bestMatchLen > 0 && bestMatchEnd > currentWordIndex) {
-            const newIndex = bestMatchEnd;
+            var newIndex = bestMatchEnd;
             updateSpokenRange(currentWordIndex + 1, newIndex);
             currentWordIndex = newIndex;
             updateProgress();
             scrollToWord(newIndex);
 
-            // 检查是否读完
             if (currentWordIndex >= words.length - 1) {
                 doneIndicator.classList.add('show');
                 setStatus('🎉 全部朗读完成！', 'highlight');
-                // 自动停止录音
-                setTimeout(function() {
-                    if (isRecording) stopRecording();
-                }, 800);
+                setTimeout(function() { if (isRecording) stopRecording(); }, 800);
             }
         }
     }
 
-    // ============================================================
-    //  语音识别
-    // ============================================================
+    // ================================
+    // 语音识别初始化（优化版）
+    // ================================
     function initRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             setStatus('⚠️ 浏览器不支持语音识别，请使用 Safari', 'error');
             return false;
@@ -934,293 +1102,339 @@
         recognition = new SpeechRecognition();
         recognition.lang = 'zh-CN';
         recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.maxAlternatives = 5;
+        recognition.interimResults = true;  // 获取中间结果更快响应
+        recognition.maxAlternatives = 3;     // 减少备选数量提高速度
+
+        var lastProcessed = '';
 
         recognition.onstart = function() {
-            setStatus('🎤 正在聆听... 请开始朗读', 'highlight');
+            setStatus('🎤 正在聆听...', 'highlight');
             btnRecord.classList.add('recording');
             isRecording = true;
+            lastProcessed = '';
         };
 
         recognition.onerror = function(event) {
-            console.warn('语音识别错误:', event.error);
             if (event.error === 'no-speech') {
-                setStatus('🔇 未检测到声音，请靠近麦克风', 'error');
+                setStatus('🔇 未检测到声音', 'error');
             } else if (event.error === 'aborted') {
                 if (isRecording) setStatus('⏸️ 已暂停', '');
             } else if (event.error === 'audio-capture') {
-                setStatus('🎤 无法访问麦克风，请检查权限', 'error');
+                setStatus('🎤 无法访问麦克风', 'error');
                 stopRecording();
             } else if (event.error === 'not-allowed') {
-                setStatus('🚫 麦克风权限被拒绝，请在设置中开启', 'error');
+                setStatus('🚫 麦克风权限被拒绝', 'error');
                 stopRecording();
             } else {
-                setStatus('❌ 错误: ' + event.error, 'error');
-                // 对于短暂错误尝试恢复
+                setStatus('❌ ' + event.error, 'error');
                 if (isRecording) {
                     clearTimeout(speechRestartTimer);
                     speechRestartTimer = setTimeout(function() {
-                        if (isRecording && recognition) {
-                            try { recognition.start(); } catch(e) {}
-                        }
-                    }, 500);
+                        if (isRecording && recognition) try { recognition.start(); } catch(e) {}
+                    }, 300);
                 }
             }
         };
 
         recognition.onend = function() {
-            // iOS 可能因锁屏/切换App断开，需要重连
             if (isRecording && words.length > 0 && currentWordIndex < words.length - 1) {
                 clearTimeout(speechRestartTimer);
                 speechRestartTimer = setTimeout(function() {
                     if (isRecording) {
-                        try {
-                            recognition.start();
-                        } catch(e) {
-                            stopRecording();
-                        }
+                        try { recognition.start(); } catch(e) { stopRecording(); }
                     }
-                }, 300);
+                }, 150);  // 缩短重连延迟
             } else {
                 stopRecording();
             }
         };
 
         recognition.onresult = function(event) {
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
+            var finalTranscript = '';
+            var interimTranscript = '';
+
+            for (var i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
+
+            // 处理最终结果
             if (finalTranscript) {
-                processSpokenText(finalTranscript.trim());
+                var trimmed = finalTranscript.trim();
+                if (trimmed && trimmed !== lastProcessed) {
+                    lastProcessed = trimmed;
+                    processSpokenText(trimmed);
+                }
+            }
+            // 也尝试处理中间结果（加快响应速度）
+            if (!finalTranscript && interimTranscript) {
+                var interim = interimTranscript.trim();
+                if (interim && interim.length >= 2) {
+                    // 仅当中间结果长度足够才尝试匹配，避免过多误触发
+                    processSpokenText(interim);
+                }
             }
         };
 
         return true;
     }
 
-    // ============================================================
+    // ================================
     //  录制控制
-    // ============================================================
+    // ================================
     function startRecording() {
         if (!isInitialized || words.length === 0) {
-            setStatus('📝 请先导入稿件内容', 'error');
+            setStatus('📝 请先导入稿件', 'error');
             if (navigator.vibrate) navigator.vibrate(20);
-            // 自动打开导入
             showTextModal();
             return;
         }
-
-        // 如果已读完，自动重置
-        if (currentWordIndex >= words.length - 1) {
-            resetProgress();
-        }
-
-        if (recognition === null) {
-            const ok = initRecognition();
-            if (!ok) return;
-        }
-
-        try {
-            recognition.start();
-        } catch(e) {
-            // 重建实例重试
+        if (currentWordIndex >= words.length - 1) resetProgress();
+        if (recognition === null) { if (!initRecognition()) return; }
+        try { recognition.start(); }
+        catch(e) {
             initRecognition();
-            try {
-                recognition.start();
-            } catch(e2) {
-                setStatus('❌ 无法启动语音识别: ' + e2.message, 'error');
-            }
+            try { recognition.start(); }
+            catch(e2) { setStatus('❌ 无法启动语音识别', 'error'); }
         }
     }
 
     function stopRecording() {
         isRecording = false;
         btnRecord.classList.remove('recording');
-        if (!doneIndicator.classList.contains('show')) {
-            setStatus('⏸️ 已暂停', '');
-        }
+        if (!doneIndicator.classList.contains('show')) setStatus('⏸️ 已暂停', '');
         clearTimeout(speechRestartTimer);
-        if (recognition) {
-            try { recognition.abort(); } catch(e) {}
-        }
+        if (recognition) { try { recognition.abort(); } catch(e) {} }
     }
 
     function toggleRecording() {
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
-        }
+        if (isRecording) stopRecording(); else startRecording();
     }
 
-    // ============================================================
+    // ================================
     //  重置
-    // ============================================================
+    // ================================
     function resetProgress() {
         currentWordIndex = -1;
-        wordElements.forEach(function(el) {
-            el.className = 'word';
-        });
+        for (var i = 0; i < wordElements.length; i++) { wordElements[i].className = 'word'; }
         progressFill.style.width = '0%';
         doneIndicator.classList.remove('show');
         wrapper.scrollTo({ top: 0, behavior: 'smooth' });
         setStatus('🔄 已重置，点击 🎤 重新开始', '');
     }
 
-    // ============================================================
+    // ================================
     //  文件导入
-    // ============================================================
+    // ================================
     function importTxtFile(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            loadText(text);
-            setStatus('📂 已导入: ' + file.name, 'highlight');
-        };
-        reader.onerror = function() {
-            setStatus('❌ 文件读取失败，请重试', 'error');
-        };
+        var reader = new FileReader();
+        reader.onload = function(e) { loadText(e.target.result); setStatus('📂 已导入: ' + file.name, 'highlight'); };
+        reader.onerror = function() { setStatus('❌ 文件读取失败', 'error'); };
         reader.readAsText(file, 'UTF-8');
     }
 
-    // ============================================================
-    //  文字输入模态框
-    // ============================================================
+    // ================================
+    //  文字输入
+    // ================================
     function showTextModal() {
         textModal.classList.add('show');
         textInput.value = '';
-        // iOS 上延迟聚焦以防止键盘动画冲突
         setTimeout(function() { textInput.focus(); }, 300);
     }
 
-    function hideTextModal() {
-        textModal.classList.remove('show');
-        textInput.blur();
-    }
+    function hideTextModal() { textModal.classList.remove('show'); textInput.blur(); }
 
     function confirmTextInput() {
-        const text = textInput.value;
-        if (text.trim().length === 0) {
-            setStatus('⚠️ 输入内容不能为空', 'error');
-            return;
-        }
+        var text = textInput.value;
+        if (text.trim().length === 0) { setStatus('⚠️ 内容不能为空', 'error'); return; }
         loadText(text);
         hideTextModal();
-        setStatus('✏️ 已导入文字 (' + words.length + ' 个词)', 'highlight');
+        setStatus('✏️ 已导入 (' + words.length + ' 词)', 'highlight');
     }
 
-    // ============================================================
-    //  事件绑定
-    // ============================================================
+    // ================================
+    //  设置面板
+    // ================================
+    function showSettings() { settingsModal.classList.add('show'); }
+    function hideSettings() { settingsModal.classList.remove('show'); }
 
-    // 录音按钮
-    btnRecord.addEventListener('click', toggleRecording);
-
-    // 文件导入
-    btnImportTxt.addEventListener('click', function() { fileInput.click(); });
-    fileInput.addEventListener('change', function(e) {
-        if (this.files.length > 0) {
-            importTxtFile(this.files[0]);
-        }
-        this.value = '';
+    // 字体大小
+    fontSizeSlider.addEventListener('input', function() {
+        var size = parseInt(this.value);
+        fontSizeValue.textContent = size;
+        teleprompter.style.fontSize = size + 'px';
+        try { localStorage.setItem('tp_fontSize', size); } catch(e) {}
     });
 
-    // 文字导入
+    // 字间距
+    letterSpacingSlider.addEventListener('input', function() {
+        var spacing = parseFloat(this.value);
+        letterSpacingValue.textContent = spacing.toFixed(1);
+        teleprompter.style.letterSpacing = spacing + 'px';
+        try { localStorage.setItem('tp_letterSpacing', spacing); } catch(e) {}
+    });
+
+    // 字体颜色
+    colorPresets.addEventListener('click', function(e) {
+        var preset = e.target.closest('.color-preset');
+        if (!preset) return;
+        var color = preset.dataset.color;
+        if (!color) return;
+        colorPresets.querySelectorAll('.color-preset').forEach(function(el) { el.classList.remove('active'); });
+        preset.classList.add('active');
+        applyFontColor(color);
+    });
+
+    // 背景颜色
+    bgPresets.addEventListener('click', function(e) {
+        var preset = e.target.closest('.bg-preset');
+        if (!preset) return;
+        var bg = preset.dataset.bg;
+        if (!bg) return;
+        bgPresets.querySelectorAll('.bg-preset').forEach(function(el) { el.classList.remove('active'); });
+        preset.classList.add('active');
+        applyBgTheme(bg);
+        // 如果自定义了字体颜色，重新应用
+        if (currentColor !== 'default') applyFontColor(currentColor);
+        try { localStorage.setItem('tp_bg', bg); } catch(e) {}
+    });
+
+    // 自动下滑
+    autoScrollToggle.addEventListener('click', toggleAutoScroll);
+
+    autoScrollSpeedSlider.addEventListener('input', function() {
+        var val = parseInt(this.value);
+        autoScrollSpeedValue.textContent = val;
+        try { localStorage.setItem('tp_autoSpeed', val); } catch(e) {}
+        // 如果正在自动下滑，重新启动以应用新速度
+        if (isAutoScrolling) {
+            stopAutoScroll();
+            if (autoScrollToggle.classList.contains('active')) startAutoScroll();
+        }
+    });
+
+    // 设置按钮
+    btnSettings.addEventListener('click', showSettings);
+    settingsDone.addEventListener('click', hideSettings);
+    settingsModal.addEventListener('click', function(e) { if (e.target === this) hideSettings(); });
+
+    // 回到顶部
+    fabBackTop.addEventListener('click', goToTop);
+
+    // 检测滚动以显示/隐藏 FAB
+    teleprompter.addEventListener('scroll', updateFabVisibility);
+
+    // ================================
+    //  加载已保存的设置
+    // ================================
+    function loadSavedSettings() {
+        try {
+            var savedFontSize = localStorage.getItem('tp_fontSize');
+            if (savedFontSize) {
+                var size = parseInt(savedFontSize);
+                fontSizeSlider.value = size;
+                fontSizeValue.textContent = size;
+                teleprompter.style.fontSize = size + 'px';
+            }
+            var savedSpacing = localStorage.getItem('tp_letterSpacing');
+            if (savedSpacing) {
+                var spacing = parseFloat(savedSpacing);
+                letterSpacingSlider.value = spacing;
+                letterSpacingValue.textContent = spacing.toFixed(1);
+                teleprompter.style.letterSpacing = spacing + 'px';
+            }
+            var savedBg = localStorage.getItem('tp_bg');
+            if (savedBg) {
+                applyBgTheme(savedBg);
+                bgPresets.querySelectorAll('.bg-preset').forEach(function(el) {
+                    el.classList.toggle('active', el.dataset.bg === savedBg);
+                });
+            }
+            var savedColor = localStorage.getItem('tp_fontColor');
+            if (savedColor) {
+                applyFontColor(savedColor);
+                colorPresets.querySelectorAll('.color-preset').forEach(function(el) {
+                    el.classList.toggle('active', el.dataset.color === savedColor);
+                });
+            }
+            var savedAutoScroll = localStorage.getItem('tp_autoScroll');
+            if (savedAutoScroll === 'on') {
+                autoScrollToggle.classList.add('active');
+                autoScrollStatus.textContent = '开启';
+            }
+            var savedAutoSpeed = localStorage.getItem('tp_autoSpeed');
+            if (savedAutoSpeed) {
+                autoScrollSpeedSlider.value = savedAutoSpeed;
+                autoScrollSpeedValue.textContent = savedAutoSpeed;
+            }
+        } catch(e) {}
+    }
+
+    // ================================
+    //  事件绑定（其余）
+    // ================================
+    btnRecord.addEventListener('click', toggleRecording);
+    btnImportTxt.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function(e) { if (this.files.length > 0) { importTxtFile(this.files[0]); } this.value = ''; });
     btnPasteText.addEventListener('click', showTextModal);
     modalCancel.addEventListener('click', hideTextModal);
     modalConfirm.addEventListener('click', confirmTextInput);
-
-    // 模态框背景点击关闭
-    textModal.addEventListener('click', function(e) {
-        if (e.target === this) hideTextModal();
-    });
-
-    // 重置
+    textModal.addEventListener('click', function(e) { if (e.target === this) hideTextModal(); });
     btnReset.addEventListener('click', resetProgress);
+    speedSlider.addEventListener('input', function() { speedValue.textContent = parseFloat(this.value).toFixed(1); });
+    textInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmTextInput(); } });
 
-    // 速度控制
-    speedSlider.addEventListener('input', function() {
-        speedFactor = parseFloat(this.value);
-        speedValue.textContent = speedFactor.toFixed(1);
-    });
-
-    // 键盘快捷键
-    textInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            confirmTextInput();
-        }
-    });
-
-    // ============================================================
-    //  点击提词器手动跳转
-    // ============================================================
+    // 点击提词器手动跳转
     teleprompter.addEventListener('click', function(e) {
-        const target = e.target.closest('.word');
+        var target = e.target.closest('.word');
         if (!target) return;
-
-        const idx = parseInt(target.dataset.index);
+        var idx = parseInt(target.dataset.index);
         if (isNaN(idx) || idx < 0 || idx >= wordElements.length) return;
-
-        // 如果在录音中，自动停止防止冲突
         if (isRecording) stopRecording();
 
-        // 清除当前所有高亮
-        wordElements.forEach(function(el) { el.className = 'word'; });
+        // 清除所有高亮
+        for (var i = 0; i < wordElements.length; i++) { wordElements[i].className = 'word'; }
 
         if (idx === 0) {
-            // 从头开始
             currentWordIndex = -1;
             updateProgress();
             wrapper.scrollTo({ top: 0, behavior: 'smooth' });
             setStatus('🔄 已跳转到开头', '');
         } else {
-            // 标记到点击位置
-            for (let i = 0; i <= idx; i++) {
-                wordElements[i].classList.add('spoken');
-            }
+            for (var i = 0; i <= idx; i++) { wordElements[i].classList.add('spoken'); }
             wordElements[idx].classList.remove('spoken');
             wordElements[idx].classList.add('active', 'current');
             currentWordIndex = idx;
             updateProgress();
             scrollToWord(idx);
-            setStatus('👆 已跳转到位置 ' + (idx + 1) + '/' + words.length, '');
+            setStatus('👆 已跳转到 ' + (idx + 1) + '/' + words.length, '');
         }
-
         doneIndicator.classList.remove('show');
     });
 
-    // ============================================================
-    //  防止 iOS 回弹手势干扰
-    // ============================================================
+    // 防止 iOS 回弹手势
     document.addEventListener('touchmove', function(e) {
         if (e.target.closest('#teleprompter') || e.target.closest('.modal')) return;
     }, { passive: true });
 
-    // ============================================================
+    // ================================
     //  初始化
-    // ============================================================
+    // ================================
+    loadSavedSettings();
     showEmptyState();
     setStatus('💡 准备就绪，请导入稿件', '');
 
-    // HTTPS 检测
     if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        console.warn('语音识别需要 HTTPS');
         if (location.hostname === '' || location.hostname === 'file://') {
             setStatus('⚠️ 使用 iPhone 时请部署到 HTTPS 服务器', 'error');
         }
     }
 
-    console.log('🎤 AI 提词器已启动');
-    console.log('📌 使用提示:');
-    console.log('   1. 点击 📂 导入 TXT 文件');
-    console.log('   2. 点击 ✏️ 粘贴文字');
-    console.log('   3. 点击 🔴 开始语音提词');
-    console.log('   4. 点击任意词可手动跳转');
+    console.log('🎤 AI 提词器 v2.0 已启动');
+    console.log('📌 新功能: 自动下滑 | 字体颜色 | 回到顶部 | 更快语音识别');
 
 })();
 </script>
