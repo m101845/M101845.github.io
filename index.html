@@ -11,28 +11,29 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1a2e'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='50'%3E🎤%3C/text%3E%3C/svg%3E">
     <title>AI 提词器</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         :root {
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --tp-spoken-color: rgba(78, 205, 196, 0.35);
-            --tp-active-color: #fff;
-            --tp-current-color: #ffe66d;
-            --tp-text-color: rgba(255,255,255,0.5);
-            --tp-bg: #1a1a2e;
+            --tp-spoken: rgba(78, 205, 196, 0.35);
+            --tp-active: #fff;
+            --tp-current: #ffe66d;
+            --tp-text: rgba(255,255,255,0.5);
+            --tp-bg: #12121f;
+            --tp-surface: rgba(255,255,255,0.04);
+            --tp-border: rgba(255,255,255,0.06);
+            --tp-overlay: rgba(0,0,0,0.6);
+            --tp-radius-sm: 10px;
+            --tp-radius-md: 16px;
+            --tp-radius-lg: 24px;
+            --tp-accent: #667eea;
+            --tp-accent2: #764ba2;
+            --tp-font-size: 26px;
+            --tp-line-height: 1.9;
         }
 
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
+        html, body { height: 100%; width: 100%; overflow: hidden; }
 
         body {
             font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Noto Sans SC', sans-serif;
@@ -43,682 +44,449 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
-            transition: background 0.3s;
+            transition: background 0.35s ease;
         }
 
-        /* ========== 顶部工具栏 ========== */
+        /* ===== 顶栏 ===== */
         .toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: calc(12px + var(--safe-top)) 16px 12px;
-            background: rgba(26, 26, 46, 0.96);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: calc(10px + var(--safe-top)) 14px 10px;
+            background: rgba(18,18,31,0.92);
+            backdrop-filter: blur(40px) saturate(1.4);
+            -webkit-backdrop-filter: blur(40px) saturate(1.4);
+            border-bottom: 1px solid var(--tp-border);
             flex-shrink: 0;
             z-index: 10;
-            transition: background 0.3s;
+            transition: background 0.35s;
         }
 
         .toolbar-title {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--tp-accent), var(--tp-accent2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
-        .toolbar-actions {
-            display: flex;
-            gap: 6px;
-        }
+        .toolbar-actions { display: flex; gap: 4px; }
 
         .toolbar-btn {
-            background: rgba(255,255,255,0.06);
+            background: var(--tp-surface);
             border: none;
-            color: #ccc;
-            width: 38px;
-            height: 38px;
+            color: rgba(255,255,255,0.7);
+            width: 34px; height: 34px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
             cursor: pointer;
-            transition: background 0.15s;
-            -webkit-tap-highlight-color: transparent;
+            transition: all 0.15s cubic-bezier(0.4,0,0.2,1);
+            will-change: transform;
         }
+        .toolbar-btn:active { background: rgba(255,255,255,0.12); transform: scale(0.88); }
 
-        .toolbar-btn:active {
-            background: rgba(255,255,255,0.15);
-            transform: scale(0.92);
-        }
-
-        /* ========== 提词器主体 ========== */
-        .teleprompter-wrapper {
+        /* ===== 提词器主体 ===== */
+        .tp-wrapper {
             flex: 1;
             position: relative;
             overflow: hidden;
         }
 
-        #teleprompter {
+        #tp-content {
             height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 24px 18px 40px;
+            padding: 28px 20px 50px;
             -webkit-overflow-scrolling: touch;
-            font-size: 26px;
-            line-height: 1.9;
-            color: var(--tp-text-color);
+            font-size: var(--tp-font-size);
+            line-height: var(--tp-line-height);
+            color: var(--tp-text);
             word-wrap: break-word;
             white-space: pre-wrap;
             overscroll-behavior: contain;
-            transition: font-size 0.15s, letter-spacing 0.15s, color 0.3s;
+            transition: font-size 0.2s, letter-spacing 0.2s, line-height 0.2s, color 0.35s;
+            will-change: scroll-position;
         }
 
-        #teleprompter .word {
-            transition: color 0.12s ease;
+        #tp-content .word {
+            transition: color 0.1s ease;
             display: inline;
         }
+        #tp-content .word.spoken { color: var(--tp-spoken); }
+        #tp-content .word.active { color: var(--tp-active); font-weight: 500; }
+        #tp-content .word.current { color: var(--tp-current); font-weight: 700; text-shadow: 0 0 18px rgba(255,230,109,0.1); }
+        .word-gap { display: inline; white-space: pre; }
 
-        #teleprompter .word.spoken {
-            color: var(--tp-spoken-color);
-        }
-
-        #teleprompter .word.active {
-            color: var(--tp-active-color);
-            font-weight: 500;
-        }
-
-        #teleprompter .word.current {
-            color: var(--tp-current-color);
-            font-weight: 700;
-            text-shadow: 0 0 20px rgba(255, 230, 109, 0.15);
-        }
-
-        .word-gap {
-            display: inline;
-            white-space: pre;
-        }
-
-        /* ========== 空状态 ========== */
+        /* 空状态 */
         .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 30px;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; padding: 30px; text-align: center;
         }
-
-        .empty-state-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.35; }
-        .empty-state h2 { font-size: 20px; margin-bottom: 8px; color: #999; font-weight: 600; }
-        .empty-state p { font-size: 14px; color: #555; line-height: 1.7; }
-
-        .empty-state-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+        .empty-state-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.3; }
+        .empty-state h2 { font-size: 19px; margin-bottom: 6px; color: rgba(255,255,255,0.5); font-weight: 600; }
+        .empty-state p { font-size: 13px; color: rgba(255,255,255,0.25); line-height: 1.6; }
+        .empty-state-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; justify-content: center; }
 
         .empty-state-btn {
-            padding: 12px 24px;
-            border-radius: 14px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
+            padding: 11px 22px; border-radius: var(--tp-radius-sm); border: none;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .empty-state-btn.primary { background: var(--tp-accent); color: #fff; }
+        .empty-state-btn.primary:active { transform: scale(0.95); background: #5a6fd6; }
+        .empty-state-btn.secondary { background: var(--tp-surface); color: rgba(255,255,255,0.6); }
+        .empty-state-btn.secondary:active { transform: scale(0.95); }
+
+        /* ===== 底部控制栏 ===== */
+        .controls {
+            background: rgba(18,18,31,0.92);
+            backdrop-filter: blur(40px) saturate(1.4);
+            -webkit-backdrop-filter: blur(40px) saturate(1.4);
+            border-top: 1px solid var(--tp-border);
+            padding: 8px 14px;
+            padding-bottom: calc(8px + var(--safe-bottom));
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .empty-state-btn.primary { background: #667eea; color: #fff; }
-        .empty-state-btn.primary:active { background: #5a6fd6; transform: scale(0.96); }
-        .empty-state-btn.secondary { background: rgba(255,255,255,0.06); color: #aaa; }
-        .empty-state-btn.secondary:active { background: rgba(255,255,255,0.12); transform: scale(0.96); }
-
-        /* ========== 底部控制栏 ========== */
-        .controls {
-            background: rgba(26, 26, 46, 0.96);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding: 10px 16px;
-            padding-bottom: calc(10px + var(--safe-bottom));
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             z-index: 10;
-            transition: background 0.3s;
+            transition: background 0.35s;
         }
 
-        .btn-record {
-            width: 52px;
-            height: 52px;
+        /* 自动下滑 - 主要按钮 */
+        .btn-scroll {
+            width: 48px; height: 48px;
             border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.04);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
+            border: 2px solid var(--tp-border);
+            background: var(--tp-surface);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+            font-size: 18px; color: rgba(255,255,255,0.6);
+            will-change: transform, border-color;
+        }
+        .btn-scroll.active { border-color: var(--tp-accent); background: rgba(102,126,234,0.15); color: #fff; }
+        .btn-scroll:active { transform: scale(0.9); }
+
+        /* 速度组 */
+        .speed-group {
+            display: flex; align-items: center; gap: 4px;
+            background: var(--tp-surface);
+            border-radius: 20px;
+            padding: 4px 10px;
             flex-shrink: 0;
-            position: relative;
         }
-
-        .btn-record-inner {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #ff4757;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        .speed-group label { font-size: 10px; color: rgba(255,255,255,0.3); }
+        .speed-group input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 48px; height: 2px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 1px; outline: none;
         }
-
-        .btn-record.recording { border-color: #ff4757; }
-        .btn-record.recording .btn-record-inner {
-            border-radius: 4px;
-            width: 16px;
-            height: 16px;
-            background: #ff6b81;
+        .speed-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: var(--tp-accent); cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
         }
-
-        .btn-record .ripple {
-            position: absolute;
-            inset: -6px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 71, 87, 0.3);
-            animation: record-ripple 1.8s ease-out infinite;
-            pointer-events: none;
-        }
-
-        @keyframes record-ripple {
-            0% { transform: scale(0.85); opacity: 1; }
-            100% { transform: scale(1.35); opacity: 0; }
-        }
+        .speed-value { font-size: 11px; color: rgba(255,255,255,0.4); min-width: 20px; text-align: center; font-variant-numeric: tabular-nums; }
 
         .status-text {
-            flex: 1;
-            font-size: 12px;
-            color: #888;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: 0;
-            line-height: 1.4;
+            flex: 1; font-size: 11px; color: rgba(255,255,255,0.35);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
         }
-
         .status-text.highlight { color: #4ecdc4 !important; }
         .status-text.error { color: #ff4757 !important; }
 
-        /* ========== 速度控制 ========== */
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0 2px;
+        /* 语音按钮（次要） */
+        .btn-mic {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--tp-border);
+            background: var(--tp-surface);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+            font-size: 16px; color: rgba(255,255,255,0.4);
+            will-change: transform;
+        }
+        .btn-mic.active { border-color: #ff4757; background: rgba(255,71,87,0.12); color: #ff4757; }
+        .btn-mic.listening { animation: mic-pulse 1.4s ease-in-out infinite; }
+        .btn-mic:active { transform: scale(0.88); }
+
+        @keyframes mic-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); }
+            50% { box-shadow: 0 0 0 8px rgba(255,71,87,0.08); }
+        }
+
+        /* 设置按钮 */
+        .btn-settings-icon {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: none; background: transparent;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s;
+            font-size: 15px; color: rgba(255,255,255,0.35);
             flex-shrink: 0;
         }
+        .btn-settings-icon:active { background: var(--tp-surface); transform: scale(0.88); }
 
-        .speed-control label { font-size: 10px; color: #555; }
-
-        .speed-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 52px;
-            height: 3px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 2px;
-            outline: none;
-        }
-
-        .speed-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-            border: 2px solid rgba(255,255,255,0.15);
-        }
-
-        .speed-value {
-            font-size: 11px;
-            color: #777;
-            min-width: 22px;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* ========== 模态框（通用） ========== */
+        /* ===== 模态框 ===== */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-            z-index: 100;
-            padding: 0;
+            position: fixed; inset: 0;
+            background: var(--tp-overlay);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none; align-items: flex-end; justify-content: center;
+            z-index: 100; padding: 0;
         }
-
         .modal-overlay.show { display: flex; }
 
         .modal {
-            background: #1e1e3a;
-            border-radius: 24px 24px 0 0;
-            width: 100%;
-            max-width: 500px;
-            max-height: 85vh;
+            background: #1a1a30;
+            border-radius: var(--tp-radius-lg) var(--tp-radius-lg) 0 0;
+            width: 100%; max-width: 500px; max-height: 82vh;
             overflow-y: auto;
-            padding: 20px 20px calc(20px + var(--safe-bottom));
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
-            animation: slide-up 0.3s ease-out;
-            transition: background 0.3s;
+            padding: 18px 20px calc(18px + var(--safe-bottom));
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+            animation: slide-up 0.35s cubic-bezier(0.32,0.72,0,1);
+            transition: background 0.35s;
         }
+        @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        @keyframes slide-up {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-handle {
-            width: 36px; height: 4px;
-            border-radius: 2px;
-            background: rgba(255,255,255,0.12);
-            margin: 0 auto 16px;
-        }
-
-        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #eee; }
+        .modal-handle { width: 32px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); margin: 0 auto 14px; }
+        .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; color: rgba(255,255,255,0.9); }
 
         .modal-textarea {
-            width: 100%;
-            min-height: 180px;
-            max-height: 50vh;
-            padding: 14px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: #eee;
-            font-size: 16px;
-            font-family: inherit;
-            line-height: 1.7;
-            resize: none;
-            outline: none;
-            -webkit-appearance: none;
+            width: 100%; min-height: 160px; max-height: 40vh;
+            padding: 14px; border-radius: var(--tp-radius-md);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--tp-border);
+            color: #eee; font-size: 15px; font-family: inherit; line-height: 1.6;
+            resize: none; outline: none; -webkit-appearance: none;
         }
-
-        .modal-textarea:focus { border-color: #667eea; }
+        .modal-textarea:focus { border-color: var(--tp-accent); }
 
         .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 
         .modal-btn {
-            flex: 1;
-            padding: 14px 20px;
-            border-radius: 14px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            text-align: center;
+            flex: 1; padding: 13px 18px; border-radius: var(--tp-radius-sm);
+            border: none; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; text-align: center;
         }
-
         .modal-btn:active { transform: scale(0.97); }
-        .modal-btn.cancel { background: rgba(255,255,255,0.06); color: #aaa; }
-        .modal-btn.cancel:active { background: rgba(255,255,255,0.12); }
-        .modal-btn.confirm { background: #667eea; color: #fff; }
+        .modal-btn.cancel { background: var(--tp-surface); color: rgba(255,255,255,0.5); }
+        .modal-btn.cancel:active { background: rgba(255,255,255,0.08); }
+        .modal-btn.confirm { background: var(--tp-accent); color: #fff; }
         .modal-btn.confirm:active { background: #5a6fd6; }
-        .modal-btn.confirm-small { background: #667eea; color: #fff; padding: 10px 16px; font-size: 14px; border-radius: 10px; flex: 0; }
 
-        /* ========== 进度条 ========== */
-        .progress-bar {
-            height: 2px;
-            background: rgba(255,255,255,0.04);
-            flex-shrink: 0;
-        }
+        /* ===== 进度条 ===== */
+        .progress-bar { height: 2px; background: rgba(255,255,255,0.03); flex-shrink: 0; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--tp-accent), var(--tp-accent2)); width: 0%; transition: width 0.3s cubic-bezier(0.4,0,0.2,1); }
 
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        /* 滚动条 */
+        #tp-content::-webkit-scrollbar { width: 2px; }
+        #tp-content::-webkit-scrollbar-track { background: transparent; }
+        #tp-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.04); border-radius: 2px; }
 
-        /* ========== 滚动条 ========== */
-        #teleprompter::-webkit-scrollbar { width: 2px; }
-        #teleprompter::-webkit-scrollbar-track { background: transparent; }
-        #teleprompter::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
-
-        /* ========== 设置面板 ========== */
-        .settings-group { margin-bottom: 20px; }
-        .settings-group-title { font-size: 13px; font-weight: 600; color: #999; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .settings-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        .settings-label { font-size: 14px; color: #ccc; min-width: 56px; flex-shrink: 0; }
-        .settings-value { font-size: 13px; color: #888; min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
+        /* ===== 设置面板 ===== */
+        .settings-group { margin-bottom: 18px; }
+        .settings-group-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.3); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .settings-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .settings-label { font-size: 13px; color: rgba(255,255,255,0.6); min-width: 52px; flex-shrink: 0; }
+        .settings-value { font-size: 12px; color: rgba(255,255,255,0.35); min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
 
         .settings-slider {
             flex: 1;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 3px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 2px;
-            outline: none;
+            -webkit-appearance: none; appearance: none;
+            height: 2px; background: rgba(255,255,255,0.06);
+            border-radius: 1px; outline: none;
         }
-
         .settings-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px; height: 18px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        /* 切换开关 */
-        .toggle-switch {
-            position: relative;
-            width: 44px;
-            height: 26px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.25s;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch.active { background: #667eea; }
-
-        .toggle-switch-knob {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            background: #ccc;
-            transition: all 0.25s;
-        }
-
-        .toggle-switch.active .toggle-switch-knob {
-            left: 21px;
-            background: #fff;
-        }
-
-        /* 背景颜色预设 */
-        .bg-presets {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .bg-preset {
-            border-radius: 12px;
-            padding: 16px 10px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.15s;
-        }
-
-        .bg-preset:active { transform: scale(0.95); }
-        .bg-preset.active { border-color: #667eea; }
-        .bg-preset-dark { background: #1a1a2e; color: rgba(255,255,255,0.5); }
-        .bg-preset-light { background: #f5f5f7; color: rgba(0,0,0,0.4); }
-        .bg-preset-warm { background: #2d1f14; color: rgba(255,220,180,0.5); }
-        .bg-preset-green { background: #1a2e1a; color: rgba(180,255,180,0.5); }
-
-        .wp-color-dot {
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            margin: 0 auto 4px;
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--tp-accent); cursor: pointer;
             border: 2px solid rgba(255,255,255,0.15);
         }
 
-        .bg-preset-dark .wp-color-dot { background: #1a1a2e; border-color: rgba(255,255,255,0.15); }
-        .bg-preset-light .wp-color-dot { background: #f5f5f7; border-color: rgba(0,0,0,0.1); }
-        .bg-preset-warm .wp-color-dot { background: #2d1f14; border-color: rgba(255,220,180,0.2); }
-        .bg-preset-green .wp-color-dot { background: #1a2e1a; border-color: rgba(180,255,180,0.15); }
-
-        .wp-preset-name { font-size: 11px; margin-top: 4px; opacity: 0.6; }
-
-        /* 字体颜色预设 */
-        .color-presets {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        /* 颜色预设 */
+        .color-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+        .color-dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent;
+            transition: all 0.15s; will-change: transform;
         }
+        .color-dot:active { transform: scale(0.85); }
+        .color-dot.active { border-color: var(--tp-accent); box-shadow: 0 0 0 2px var(--tp-accent); }
 
-        .color-preset {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.15s;
+        /* 背景预设 */
+        .bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .bg-box {
+            border-radius: var(--tp-radius-sm); padding: 14px 8px; text-align: center;
+            cursor: pointer; border: 2px solid transparent; transition: all 0.15s; will-change: transform;
         }
+        .bg-box:active { transform: scale(0.95); }
+        .bg-box.active { border-color: var(--tp-accent); }
+        .bg-dot { width: 22px; height: 22px; border-radius: 50%; margin: 0 auto 3px; border: 2px solid rgba(255,255,255,0.1); }
+        .bg-name { font-size: 10px; opacity: 0.5; }
 
-        .color-preset:active { transform: scale(0.85); }
-        .color-preset.active { border-color: #667eea; box-shadow: 0 0 0 2px #667eea; }
-
-        /* ========== 回到顶部 FAB ========== */
-        .fab-back-top {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(102, 126, 234, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: none;
-            color: #fff;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* ===== FAB回到顶部 ===== */
+        .fab-top {
+            position: absolute; bottom: 14px; right: 14px;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(102,126,234,0.8);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: none; color: #fff; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            opacity: 0;
-            transform: scale(0.6);
+            opacity: 0; transform: scale(0.5) translateY(10px);
             pointer-events: none;
-            transition: all 0.25s;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             z-index: 5;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            will-change: transform, opacity;
         }
+        .fab-top.show { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+        .fab-top:active { transform: scale(0.85); }
 
-        .fab-back-top.show {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        .fab-back-top:active { transform: scale(0.88); }
-
-        /* ========== 完成提示 ========== */
-        .done-indicator {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(26, 26, 46, 0.7);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            opacity: 0;
-            pointer-events: none;
+        /* ===== 完成提示 ===== */
+        .done-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(18,18,31,0.75);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            opacity: 0; pointer-events: none;
             transition: opacity 0.5s;
         }
+        .done-overlay.show { opacity: 1; pointer-events: auto; }
+        .done-icon { font-size: 44px; margin-bottom: 10px; }
+        .done-text { font-size: 17px; color: rgba(255,255,255,0.5); font-weight: 600; }
 
-        .done-indicator.show { opacity: 1; pointer-events: auto; }
-        .done-indicator-icon { font-size: 48px; margin-bottom: 12px; }
-        .done-indicator-text { font-size: 18px; color: #aaa; font-weight: 600; }
-
-        /* ========== 响应式 ========== */
-        @media (min-width: 375px) and (max-width: 430px) {
-            #teleprompter { font-size: 24px; padding: 20px 16px 36px; }
-        }
-
+        /* ===== 响应式 ===== */
         @media (max-width: 374px) {
-            #teleprompter { font-size: 20px; line-height: 1.7; padding: 16px 12px 30px; }
-            .toolbar-title { font-size: 15px; }
-            .btn-record { width: 46px; height: 46px; }
-            .btn-record-inner { width: 20px; height: 20px; }
-            .controls { padding: 8px 12px; gap: 6px; }
-            .speed-slider { width: 40px; }
+            #tp-content { font-size: 20px; line-height: 1.7; padding: 18px 14px 36px; }
+            .toolbar-title { font-size: 14px; }
+            .btn-scroll { width: 42px; height: 42px; font-size: 16px; }
+            .controls { padding: 6px 10px; gap: 6px; }
         }
-
         @media (min-width: 430px) {
-            #teleprompter { font-size: 30px; padding: 32px 24px 50px; }
+            #tp-content { font-size: 30px; padding: 32px 24px 56px; }
         }
-
         @media (min-width: 768px) {
-            #teleprompter { font-size: 34px; padding: 40px 32px 60px; max-width: 800px; margin: 0 auto; }
+            #tp-content { font-size: 34px; padding: 40px 32px 64px; max-width: 720px; margin: 0 auto; }
         }
 
-        /* 选中文本 */
-        ::selection { background: rgba(102, 126, 234, 0.3); }
-        .teleprompter-wrapper { overscroll-behavior: contain; }
+        ::selection { background: rgba(102,126,234,0.25); }
     </style>
 </head>
 <body>
 
-    <!-- ========== 顶栏 ========== -->
     <div class="toolbar">
         <div class="toolbar-title">🎤 AI 提词器</div>
         <div class="toolbar-actions">
-            <button class="toolbar-btn" id="btnImportTxt" title="导入TXT文件">📂</button>
-            <button class="toolbar-btn" id="btnPasteText" title="粘贴文字">✏️</button>
-            <button class="toolbar-btn" id="btnSettings" title="设置">⚙️</button>
+            <button class="toolbar-btn" id="btnImport" title="导入TXT">📂</button>
+            <button class="toolbar-btn" id="btnPaste" title="粘贴文字">✏️</button>
             <button class="toolbar-btn" id="btnReset" title="重置">🔄</button>
         </div>
     </div>
 
-    <!-- ========== 进度条 ========== -->
-    <div class="progress-bar">
-        <div class="progress-bar-fill" id="progressFill"></div>
-    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" id="progressFill"></div></div>
 
-    <!-- ========== 提词器主体 ========== -->
-    <div class="teleprompter-wrapper" id="teleprompterWrapper">
-        <div id="teleprompter"></div>
-        <button class="fab-back-top" id="fabBackTop" title="回到顶部">⬆</button>
-        <div class="done-indicator" id="doneIndicator">
-            <div class="done-indicator-icon">🎉</div>
-            <div class="done-indicator-text">全部朗读完成</div>
+    <div class="tp-wrapper" id="tpWrapper">
+        <div id="tp-content"></div>
+        <button class="fab-top" id="fabTop">⬆</button>
+        <div class="done-overlay" id="doneOverlay">
+            <div class="done-icon">🎉</div>
+            <div class="done-text">全部完成</div>
         </div>
     </div>
 
-    <!-- ========== 底部控制栏 ========== -->
     <div class="controls">
-        <button class="btn-record" id="btnRecord" aria-label="开始/停止录音">
-            <div class="btn-record-inner"></div>
-        </button>
-        <div class="status-text" id="statusText">💡 准备就绪</div>
-        <div class="speed-control">
+        <!-- 自动下滑（主要功能） -->
+        <button class="btn-scroll" id="btnScroll" title="自动下滑">⏬</button>
+
+        <!-- 速度调节 -->
+        <div class="speed-group">
             <label>速度</label>
-            <input type="range" class="speed-slider" id="speedSlider" min="0.5" max="2.0" step="0.1" value="1.0" aria-label="滚动速度">
-            <span class="speed-value" id="speedValue">1.0</span>
+            <input type="range" id="scrollSpeed" min="1" max="10" step="1" value="4">
+            <span class="speed-value" id="scrollSpeedVal">4</span>
         </div>
+
+        <div class="status-text" id="statusText">⏸ 就绪</div>
+
+        <!-- 语音识别（次要） -->
+        <button class="btn-mic" id="btnMic" title="语音识别">🎤</button>
+        <button class="btn-settings-icon" id="btnSettings" title="设置">⚙️</button>
     </div>
 
-    <!-- ========== 文字输入模态框 ========== -->
+    <!-- 文字输入 -->
     <div class="modal-overlay" id="textModal">
         <div class="modal">
             <div class="modal-handle"></div>
-            <div class="modal-title">✏️ 粘贴或输入文字</div>
-            <textarea class="modal-textarea" id="textInput" placeholder="在此粘贴或输入你的稿件内容...&#10;&#10;提示：每行代表一个段落"></textarea>
+            <div class="modal-title">✏️ 输入文字</div>
+            <textarea class="modal-textarea" id="textInput" placeholder="粘贴或输入稿件内容..."></textarea>
             <div class="modal-actions">
                 <button class="modal-btn cancel" id="modalCancel">取消</button>
-                <button class="modal-btn confirm" id="modalConfirm">确认导入</button>
+                <button class="modal-btn confirm" id="modalConfirm">导入</button>
             </div>
         </div>
     </div>
 
     <input type="file" id="fileInput" accept=".txt,.text,text/plain" style="display:none">
 
-    <!-- ========== 设置模态框 ========== -->
+    <!-- 设置 -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
             <div class="modal-handle"></div>
-            <div class="modal-title">⚙️ 显示设置</div>
+            <div class="modal-title">⚙️ 设置</div>
 
-            <!-- 自动下滑 -->
-            <div class="settings-group">
-                <div class="settings-group-title">自动下滑</div>
-                <div class="settings-row">
-                    <span class="settings-label">开启</span>
-                    <div class="toggle-switch" id="autoScrollToggle">
-                        <div class="toggle-switch-knob"></div>
-                    </div>
-                    <span style="font-size:12px;color:#666;" id="autoScrollStatus">关闭</span>
-                </div>
-                <div class="settings-row" style="margin-top:8px;">
-                    <span class="settings-label">速度</span>
-                    <input type="range" class="settings-slider" id="autoScrollSpeedSlider" min="1" max="10" step="1" value="4" aria-label="自动下滑速度">
-                    <span class="settings-value" id="autoScrollSpeedValue">4</span>
-                </div>
-            </div>
-
-            <!-- 字体大小 -->
             <div class="settings-group">
                 <div class="settings-group-title">字体大小</div>
                 <div class="settings-row">
                     <span class="settings-label">Aa</span>
                     <input type="range" class="settings-slider" id="fontSizeSlider" min="14" max="42" step="1" value="26">
-                    <span class="settings-value" id="fontSizeValue">26</span>
+                    <span class="settings-value" id="fontSizeVal">26</span>
                 </div>
             </div>
 
-            <!-- 字间距 -->
+            <div class="settings-group">
+                <div class="settings-group-title">行间距</div>
+                <div class="settings-row">
+                    <span class="settings-label">行高</span>
+                    <input type="range" class="settings-slider" id="lineHeightSlider" min="1.2" max="3.0" step="0.1" value="1.9">
+                    <span class="settings-value" id="lineHeightVal">1.9</span>
+                </div>
+            </div>
+
             <div class="settings-group">
                 <div class="settings-group-title">字间距</div>
                 <div class="settings-row">
                     <span class="settings-label">间距</span>
-                    <input type="range" class="settings-slider" id="letterSpacingSlider" min="0" max="8" step="0.5" value="0.3">
-                    <span class="settings-value" id="letterSpacingValue">0.3</span>
+                    <input type="range" class="settings-slider" id="letterSpaceSlider" min="0" max="6" step="0.5" value="0">
+                    <span class="settings-value" id="letterSpaceVal">0</span>
                 </div>
             </div>
 
-            <!-- 字体颜色 -->
             <div class="settings-group">
-                <div class="settings-group-title">字体颜色</div>
-                <div class="color-presets" id="colorPresets">
-                    <div class="color-preset active" data-color="default" style="background:linear-gradient(135deg,#667eea,#764ba2);" title="默认渐变"></div>
-                    <div class="color-preset" data-color="#ffe66d" style="background:#ffe66d;" title="暖黄"></div>
-                    <div class="color-preset" data-color="#4ecdc4" style="background:#4ecdc4;" title="青绿"></div>
-                    <div class="color-preset" data-color="#ff6b6b" style="background:#ff6b6b;" title="珊瑚红"></div>
-                    <div class="color-preset" data-color="#a29bfe" style="background:#a29bfe;" title="淡紫"></div>
-                    <div class="color-preset" data-color="#fd79a8" style="background:#fd79a8;" title="粉红"></div>
-                    <div class="color-preset" data-color="#ffffff" style="background:#fff;border:2px solid rgba(255,255,255,0.2);" title="纯白"></div>
-                    <div class="color-preset" data-color="#dfe6e9" style="background:#dfe6e9;border:2px solid rgba(255,255,255,0.2);" title="浅灰"></div>
+                <div class="settings-group-title">高亮颜色</div>
+                <div class="color-grid" id="colorGrid">
+                    <div class="color-dot active" data-c="default" style="background:linear-gradient(135deg,#667eea,#764ba2);" title="默认"></div>
+                    <div class="color-dot" data-c="#ffe66d" style="background:#ffe66d;" title="暖黄"></div>
+                    <div class="color-dot" data-c="#4ecdc4" style="background:#4ecdc4;" title="青绿"></div>
+                    <div class="color-dot" data-c="#ff6b6b" style="background:#ff6b6b;" title="珊瑚"></div>
+                    <div class="color-dot" data-c="#a29bfe" style="background:#a29bfe;" title="淡紫"></div>
+                    <div class="color-dot" data-c="#fd79a8" style="background:#fd79a8;" title="粉红"></div>
+                    <div class="color-dot" data-c="#fff" style="background:#fff;border-color:rgba(255,255,255,0.15);" title="纯白"></div>
+                    <div class="color-dot" data-c="#dfe6e9" style="background:#dfe6e9;border-color:rgba(255,255,255,0.15);" title="浅灰"></div>
                 </div>
             </div>
 
-            <!-- 背景颜色 -->
             <div class="settings-group">
-                <div class="settings-group-title">背景颜色</div>
-                <div class="bg-presets" id="bgPresets">
-                    <div class="bg-preset bg-preset-dark active" data-bg="dark"><div class="wp-color-dot"></div><div class="wp-preset-name">深色</div></div>
-                    <div class="bg-preset bg-preset-light" data-bg="light"><div class="wp-color-dot"></div><div class="wp-preset-name">浅色</div></div>
-                    <div class="bg-preset bg-preset-warm" data-bg="warm"><div class="wp-color-dot"></div><div class="wp-preset-name">暖色</div></div>
-                    <div class="bg-preset bg-preset-green" data-bg="green"><div class="wp-color-dot"></div><div class="wp-preset-name">护眼</div></div>
+                <div class="settings-group-title">背景主题</div>
+                <div class="bg-grid" id="bgGrid">
+                    <div class="bg-box active" data-bg="dark" style="background:#12121f;"><div class="bg-dot" style="background:#12121f;border-color:rgba(255,255,255,0.1);"></div><div class="bg-name">深色</div></div>
+                    <div class="bg-box" data-bg="light" style="background:#eeeef2;"><div class="bg-dot" style="background:#eeeef2;border-color:rgba(0,0,0,0.08);"></div><div class="bg-name" style="color:rgba(0,0,0,0.4);">浅色</div></div>
+                    <div class="bg-box" data-bg="warm" style="background:#2a1e14;"><div class="bg-dot" style="background:#2a1e14;border-color:rgba(255,200,150,0.15);"></div><div class="bg-name">暖棕</div></div>
+                    <div class="bg-box" data-bg="green" style="background:#142214;"><div class="bg-dot" style="background:#142214;border-color:rgba(150,255,150,0.1);"></div><div class="bg-name">护眼</div></div>
                 </div>
             </div>
 
@@ -729,713 +497,464 @@
     </div>
 
 <script>
-(function() {
+(function(){
     'use strict';
 
-    // ================================
-    //  DOM 引用
-    // ================================
-    var teleprompter = document.getElementById('teleprompter');
-    var wrapper = document.getElementById('teleprompterWrapper');
-    var btnRecord = document.getElementById('btnRecord');
-    var statusText = document.getElementById('statusText');
-    var progressFill = document.getElementById('progressFill');
-    var speedSlider = document.getElementById('speedSlider');
-    var speedValue = document.getElementById('speedValue');
-    var btnImportTxt = document.getElementById('btnImportTxt');
-    var btnPasteText = document.getElementById('btnPasteText');
+    // ===== DOM =====
+    var tp = document.getElementById('tp-content');
+    var wrapper = document.getElementById('tpWrapper');
+    var status = document.getElementById('statusText');
+    var prog = document.getElementById('progressFill');
+    var btnScroll = document.getElementById('btnScroll');
+    var scrollSpeed = document.getElementById('scrollSpeed');
+    var scrollSpeedVal = document.getElementById('scrollSpeedVal');
+    var btnMic = document.getElementById('btnMic');
+    var btnSettings = document.getElementById('btnSettings');
+    var btnImport = document.getElementById('btnImport');
+    var btnPaste = document.getElementById('btnPaste');
     var btnReset = document.getElementById('btnReset');
     var fileInput = document.getElementById('fileInput');
+    var fabTop = document.getElementById('fabTop');
+    var doneOverlay = document.getElementById('doneOverlay');
+
     var textModal = document.getElementById('textModal');
     var textInput = document.getElementById('textInput');
     var modalCancel = document.getElementById('modalCancel');
     var modalConfirm = document.getElementById('modalConfirm');
-    var doneIndicator = document.getElementById('doneIndicator');
-    var fabBackTop = document.getElementById('fabBackTop');
 
-    // 设置面板
     var settingsModal = document.getElementById('settingsModal');
-    var btnSettings = document.getElementById('btnSettings');
     var settingsDone = document.getElementById('settingsDone');
     var fontSizeSlider = document.getElementById('fontSizeSlider');
-    var fontSizeValue = document.getElementById('fontSizeValue');
-    var letterSpacingSlider = document.getElementById('letterSpacingSlider');
-    var letterSpacingValue = document.getElementById('letterSpacingValue');
-    var bgPresets = document.getElementById('bgPresets');
-    var colorPresets = document.getElementById('colorPresets');
-    var autoScrollToggle = document.getElementById('autoScrollToggle');
-    var autoScrollStatus = document.getElementById('autoScrollStatus');
-    var autoScrollSpeedSlider = document.getElementById('autoScrollSpeedSlider');
-    var autoScrollSpeedValue = document.getElementById('autoScrollSpeedValue');
+    var fontSizeVal = document.getElementById('fontSizeVal');
+    var lineHeightSlider = document.getElementById('lineHeightSlider');
+    var lineHeightVal = document.getElementById('lineHeightVal');
+    var letterSpaceSlider = document.getElementById('letterSpaceSlider');
+    var letterSpaceVal = document.getElementById('letterSpaceVal');
+    var colorGrid = document.getElementById('colorGrid');
+    var bgGrid = document.getElementById('bgGrid');
 
-    // ================================
-    //  状态
-    // ================================
-    var words = [];
-    var wordElements = [];
-    var currentWordIndex = -1;
-    var isRecording = false;
-    var recognition = null;
-    var isInitialized = false;
-    var scrollTimeout = null;
-    var speechRestartTimer = null;
-    var autoScrollTimer = null;
-    var isAutoScrolling = false;
-    var currentBg = 'dark';
-    var currentColor = 'default';
+    var root = document.documentElement;
 
-    // ================================
-    //  工具函数
-    // ================================
-    function setStatus(msg, type) {
-        statusText.textContent = msg;
-        statusText.className = 'status-text';
-        if (type === 'highlight') statusText.classList.add('highlight');
-        else if (type === 'error') statusText.classList.add('error');
+    // ===== 状态 =====
+    var words = [], elements = [], currentIdx = -1, inited = false,
+        isScrolling = false, scrollTimer = null, isRecording = false, recog = null, recogTimer = null,
+        scrollTimout = null, currentBg = 'dark', currentColor = 'default', lastSpoken = '';
+
+    // ===== 工具 =====
+    function setStatus(msg, t) {
+        status.textContent = msg;
+        status.className = 'status-text';
+        if (t === 'highlight') status.classList.add('highlight');
+        else if (t === 'error') status.classList.add('error');
     }
 
-    function updateProgress() {
-        if (words.length === 0) { progressFill.style.width = '0%'; return; }
-        progressFill.style.width = Math.min(((currentWordIndex + 1) / words.length) * 100, 100) + '%';
+    function updProg() {
+        if (!words.length) { prog.style.width = '0%'; return; }
+        prog.style.width = Math.min(((currentIdx + 1) / words.length) * 100, 100) + '%';
     }
 
-    function normalizeText(text) {
-        return text.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g, '').toLowerCase().trim();
-    }
-
-    function normalizeChar(c) {
-        return c.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g, '').toLowerCase();
-    }
+    function norm(t) { return t.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g,'').toLowerCase().trim(); }
+    function normC(c) { return c.replace(/[\u3000-\u303f\uff00-\uffef，。、；：！？""''（）【】《》「」『』〈〉\s\.\,\;\:\!\?\(\)\[\]\{\}\-\—\~\·\`\‘\’\“\”]/g,'').toLowerCase(); }
 
     function tokenize(text) {
-        var tokens = [];
-        var i = 0;
+        var tokens = [], i = 0;
         while (i < text.length) {
             var ch = text[i];
             if (/[\s\r\n]/.test(ch)) { i++; continue; }
             if (/[\u4e00-\u9fff]/.test(ch)) { tokens.push(ch); i++; }
-            else if (/[a-zA-Z]/.test(ch)) {
-                var word = '';
-                while (i < text.length && /[a-zA-Z']/.test(text[i])) { word += text[i]; i++; }
-                tokens.push(word);
-            } else if (/[0-9]/.test(ch)) {
-                var num = '';
-                while (i < text.length && /[0-9]/.test(text[i])) { num += text[i]; i++; }
-                tokens.push(num);
-            } else { tokens.push(ch); i++; }
+            else if (/[a-zA-Z]/.test(ch)) { var w=''; while(i<text.length && /[a-zA-Z']/.test(text[i])) { w+=text[i]; i++; } tokens.push(w); }
+            else if (/[0-9]/.test(ch)) { var n=''; while(i<text.length && /[0-9]/.test(text[i])) { n+=text[i]; i++; } tokens.push(n); }
+            else { tokens.push(ch); i++; }
         }
         return tokens;
     }
 
-    // ================================
-    //  CSS 变量管理
-    // ================================
-    var root = document.documentElement;
+    // ===== 主题 =====
+    var themes = {
+        dark:  { bg:'#12121f', m:'#1a1a30', sp:'rgba(78,205,196,0.35)', ac:'#fff', cu:'#ffe66d', tx:'rgba(255,255,255,0.5)', srf:'rgba(255,255,255,0.04)' },
+        light: { bg:'#eeeef2', m:'#f0f0f5', sp:'rgba(90,111,214,0.3)', ac:'#1a1a2e', cu:'#5a6fd6', tx:'rgba(0,0,0,0.4)', srf:'rgba(0,0,0,0.04)' },
+        warm:  { bg:'#2a1e14', m:'#352618', sp:'rgba(255,200,150,0.3)', ac:'#fff8f0', cu:'#ffb88c', tx:'rgba(255,220,180,0.55)', srf:'rgba(255,255,255,0.05)' },
+        green: { bg:'#142214', m:'#1e301e', sp:'rgba(150,255,150,0.25)', ac:'#f0fff0', cu:'#90ee90', tx:'rgba(180,255,180,0.5)', srf:'rgba(255,255,255,0.04)' }
+    };
 
-    function applyBgTheme(name) {
-        var themes = {
-            dark:  { bg: '#1a1a2e', spoken: 'rgba(78, 205, 196, 0.35)', active: '#fff', current: '#ffe66d', text: 'rgba(255,255,255,0.5)', modal: '#1e1e3a' },
-            light: { bg: '#f5f5f7', spoken: 'rgba(90, 111, 214, 0.3)', active: '#1a1a2e', current: '#5a6fd6', text: 'rgba(0,0,0,0.35)', modal: '#f0f0f5' },
-            warm:  { bg: '#2d1f14', spoken: 'rgba(255, 200, 150, 0.3)', active: '#fff8f0', current: '#ffb88c', text: 'rgba(255,220,180,0.55)', modal: '#362818' },
-            green: { bg: '#1a2e1a', spoken: 'rgba(150, 255, 150, 0.25)', active: '#f0fff0', current: '#90ee90', text: 'rgba(180,255,180,0.5)', modal: '#223822' }
-        };
-        var theme = themes[name];
-        if (!theme) return;
+    function applyBg(name) {
+        var t = themes[name]; if (!t) return;
         currentBg = name;
-        root.style.setProperty('--tp-bg', theme.bg);
-        root.style.setProperty('--tp-spoken-color', theme.spoken);
-        root.style.setProperty('--tp-active-color', theme.active);
-        root.style.setProperty('--tp-current-color', theme.current);
-        root.style.setProperty('--tp-text-color', theme.text);
-        document.body.style.backgroundColor = theme.bg;
-
-        var toolbarEl = document.querySelector('.toolbar');
-        var controlsEl = document.querySelector('.controls');
-        if (toolbarEl) toolbarEl.style.backgroundColor = theme.bg + 'f5';
-        if (controlsEl) controlsEl.style.backgroundColor = theme.bg + 'f5';
-
-        // 模态框背景
-        var modalEls = document.querySelectorAll('.modal');
-        for (var mi = 0; mi < modalEls.length; mi++) {
-            modalEls[mi].style.backgroundColor = theme.modal;
-        }
+        root.style.setProperty('--tp-bg', t.bg);
+        root.style.setProperty('--tp-spoken', t.sp);
+        root.style.setProperty('--tp-active', t.ac);
+        root.style.setProperty('--tp-text', t.tx);
+        if (currentColor === 'default') root.style.setProperty('--tp-current', t.cu);
+        root.style.setProperty('--tp-surface', t.srf);
+        document.body.style.background = t.bg;
+        [document.querySelector('.toolbar'), document.querySelector('.controls')].forEach(function(el) {
+            if (el) el.style.background = t.bg + 'eb';
+        });
+        document.querySelectorAll('.modal').forEach(function(el) { el.style.background = t.m; });
     }
 
-    function applyFontColor(color) {
-        currentColor = color;
-        if (color === 'default') {
-            root.style.setProperty('--tp-current-color', currentBg === 'dark' ? '#ffe66d' : currentBg === 'light' ? '#5a6fd6' : currentBg === 'warm' ? '#ffb88c' : '#90ee90');
-            // remove inline color
-            var words = document.querySelectorAll('#teleprompter .word.current');
-            for (var i = 0; i < words.length; i++) {
-                words[i].style.color = '';
-            }
+    function applyColor(c) {
+        currentColor = c;
+        if (c === 'default') {
+            root.style.setProperty('--tp-current', themes[currentBg] ? themes[currentBg].cu : '#ffe66d');
+            document.querySelectorAll('#tp-content .word.current').forEach(function(el) { el.style.color = ''; });
         } else {
-            root.style.setProperty('--tp-current-color', color);
+            root.style.setProperty('--tp-current', c);
         }
-        try { localStorage.setItem('tp_fontColor', color); } catch(e) {}
     }
 
-    // ================================
-    //  加载文本
-    // ================================
+    // ===== 加载文字 =====
     function loadText(text) {
-        teleprompter.innerHTML = '';
-        words = [];
-        wordElements = [];
-        currentWordIndex = -1;
-        doneIndicator.classList.remove('show');
+        tp.innerHTML = ''; words = []; elements = []; currentIdx = -1;
+        doneOverlay.classList.remove('show');
 
-        if (!text || text.trim().length === 0) { showEmptyState(); return; }
-
+        if (!text || !text.trim()) { showEmpty(); return; }
         var tokens = tokenize(text);
-        if (tokens.length === 0) { showEmptyState(); return; }
+        if (!tokens.length) { showEmpty(); return; }
 
-        words = tokens.map(function(t, idx) { return { text: t, index: idx }; });
+        words = tokens.map(function(t,i) { return {text:t, index:i}; });
 
-        for (var ti = 0; ti < tokens.length; ti++) {
-            var span = document.createElement('span');
-            span.className = 'word';
-            span.textContent = tokens[ti];
-            span.dataset.index = ti;
-            teleprompter.appendChild(span);
-            wordElements.push(span);
-            if (ti < tokens.length - 1) {
-                var space = document.createElement('span');
-                space.className = 'word-gap';
-                space.textContent = ' ';
-                teleprompter.appendChild(space);
+        for (var i = 0; i < tokens.length; i++) {
+            var s = document.createElement('span');
+            s.className = 'word'; s.textContent = tokens[i]; s.dataset.index = i;
+            tp.appendChild(s); elements.push(s);
+            if (i < tokens.length - 1) {
+                var sp = document.createElement('span');
+                sp.className = 'word-gap'; sp.textContent = ' ';
+                tp.appendChild(sp);
             }
         }
 
-        isInitialized = true;
-        currentWordIndex = -1;
-        updateProgress();
-        setStatus('✅ 已加载 ' + tokens.length + ' 词，点击 🎤 开始朗读', '');
+        inited = true; currentIdx = -1;
+        updProg(); setStatus('✅ ' + tokens.length + ' 词', '');
     }
 
-    function showEmptyState() {
-        teleprompter.innerHTML = [
-            '<div class="empty-state">',
-            '<div class="empty-state-icon">📝</div>',
-            '<h2>还没有内容</h2>',
-            '<p>请先导入你的稿件</p>',
-            '<div class="empty-state-actions">',
-            '<button class="empty-state-btn primary" id="emptyImportBtn">📂 导入 TXT 文件</button>',
-            '<button class="empty-state-btn secondary" id="emptyPasteBtn">✏️ 粘贴文字</button>',
-            '</div></div>'
-        ].join('');
-        isInitialized = false;
-        words = [];
-        wordElements = [];
-        currentWordIndex = -1;
-        progressFill.style.width = '0%';
-        doneIndicator.classList.remove('show');
-        var ei = document.getElementById('emptyImportBtn');
-        var ep = document.getElementById('emptyPasteBtn');
-        if (ei) ei.addEventListener('click', function() { fileInput.click(); });
-        if (ep) ep.addEventListener('click', showTextModal);
+    function showEmpty() {
+        tp.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h2>还没有内容</h2><p>导入 TXT 或粘贴文字开始</p><div class="empty-state-actions"><button class="empty-state-btn primary" id="ei">📂 导入 TXT</button><button class="empty-state-btn secondary" id="ep">✏️ 粘贴文字</button></div></div>';
+        inited = false; words = []; elements = []; currentIdx = -1;
+        prog.style.width = '0%'; doneOverlay.classList.remove('show');
+        var ei = document.getElementById('ei'), ep = document.getElementById('ep');
+        if (ei) ei.onclick = function(){ fileInput.click(); };
+        if (ep) ep.onclick = showTextModal;
     }
 
-    // ================================
-    //  自动下滑
-    // ================================
-    function startAutoScroll() {
-        if (autoScrollTimer) clearInterval(autoScrollTimer);
-        isAutoScrolling = true;
-        var speed = parseInt(autoScrollSpeedSlider.value);
-        // speed 1-10 => interval 120-30ms, step 3-8px
-        var interval = Math.max(30, 130 - speed * 10);
-        var step = Math.max(2, speed * 0.8);
+    // ===== 自动下滑（核心功能） =====
+    function startScroll() {
+        if (scrollTimer) clearInterval(scrollTimer);
+        isScrolling = true;
+        btnScroll.classList.add('active');
+        var speed = parseInt(scrollSpeed.value);
+        var interval = Math.max(20, 110 - speed * 9);
+        var step = Math.max(1, speed * 0.6 + 0.5);
 
-        autoScrollTimer = setInterval(function() {
-            if (!isAutoScrolling) return;
-            teleprompter.scrollTop += step;
-            // 检测是否到顶部
-            if (teleprompter.scrollTop <= 0) {
-                // 到顶了不用特殊处理
+        scrollTimer = setInterval(function() {
+            if (!isScrolling) return;
+            tp.scrollTop += step;
+            if (tp.scrollTop + tp.clientHeight >= tp.scrollHeight - 1) {
+                // 到底后回到顶部
+                goTop();
+                // 如果仍然开启，继续
+                if (isScrolling) {
+                    var self = scrollTimer;
+                    setTimeout(function() {
+                        if (isScrolling && scrollTimer === self) startScroll();
+                    }, 600);
+                }
             }
-            // 检查是否到底
-            if (teleprompter.scrollTop + teleprompter.clientHeight >= teleprompter.scrollHeight - 2) {
-                // 到底，回到顶部
-                goToTop();
-            }
-            // FAB 显示状态更新
-            updateFabVisibility();
+            updFab();
         }, interval);
+        setStatus('⏬ 自动下滑中 (' + speed + ')', 'highlight');
     }
 
-    function stopAutoScroll() {
-        isAutoScrolling = false;
-        if (autoScrollTimer) { clearInterval(autoScrollTimer); autoScrollTimer = null; }
+    function stopScroll() {
+        isScrolling = false;
+        btnScroll.classList.remove('active');
+        if (scrollTimer) { clearInterval(scrollTimer); scrollTimer = null; }
+        setStatus('⏸ 已暂停', '');
     }
 
-    function toggleAutoScroll() {
-        var active = autoScrollToggle.classList.toggle('active');
-        autoScrollStatus.textContent = active ? '开启' : '关闭';
-        if (active) {
-            if (isInitialized && words.length > 0) {
-                startAutoScroll();
-                setStatus('⏬ 自动下滑中...', 'highlight');
-            } else {
-                autoScrollToggle.classList.remove('active');
-                autoScrollStatus.textContent = '关闭';
-                setStatus('📝 请先导入稿件', 'error');
-            }
-        } else {
-            stopAutoScroll();
-            setStatus('⏸️ 已暂停下滑', '');
-        }
-        try { localStorage.setItem('tp_autoScroll', active ? 'on' : 'off'); } catch(e) {}
-    }
-
-    function goToTop() {
-        stopAutoScroll();
-        teleprompter.scrollTo({ top: 0, behavior: 'smooth' });
-        fabBackTop.classList.remove('show');
-        // 如果自动下滑开关开着，重新开始
-        if (autoScrollToggle.classList.contains('active') && isInitialized) {
-            setTimeout(function() {
-                if (autoScrollToggle.classList.contains('active')) startAutoScroll();
-            }, 400);
+    function toggleScroll() {
+        if (isScrolling) { stopScroll(); }
+        else {
+            if (!inited || !words.length) { setStatus('📝 请先导入稿件', 'error'); return; }
+            startScroll();
         }
     }
 
-    function updateFabVisibility() {
-        if (teleprompter.scrollTop > wrapper.clientHeight * 0.6) {
-            fabBackTop.classList.add('show');
-        } else {
-            fabBackTop.classList.remove('show');
-        }
+    function goTop() {
+        var wasScrolling = isScrolling;
+        if (wasScrolling) { stopScroll(); }
+        tp.scrollTo({ top: 0, behavior: 'smooth' });
+        fabTop.classList.remove('show');
+        setTimeout(function() {
+            if (wasScrolling && inited && words.length) startScroll();
+        }, 400);
     }
 
-    // ================================
-    //  滚动
-    // ================================
-    function scrollToWord(index) {
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(function() {
-            var el = wordElements[index];
+    function updFab() {
+        fabTop.classList.toggle('show', tp.scrollTop > wrapper.clientHeight * 0.5);
+    }
+
+    // ===== 语音滚动 =====
+    function scrollToWord(idx) {
+        if (scrollTimout) clearTimeout(scrollTimout);
+        scrollTimout = setTimeout(function() {
+            var el = elements[idx];
             if (!el) return;
-            var wrapperRect = wrapper.getBoundingClientRect();
-            var elRect = el.getBoundingClientRect();
-            var targetY = wrapperRect.height * 0.35;
-            var currentOffset = elRect.top - wrapperRect.top;
-            var scrollTarget = wrapper.scrollTop + currentOffset - targetY;
-            wrapper.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
-        }, 80);
+            var wr = wrapper.getBoundingClientRect(), er = el.getBoundingClientRect();
+            var target = wrapper.scrollTop + (er.top - wr.top) - wr.height * 0.35;
+            wrapper.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        }, 60);
     }
 
-    // ================================
-    //  朗读状态
-    // ================================
-    function updateSpokenRange(from, to) {
-        for (var i = from; i <= to && i < wordElements.length; i++) {
-            wordElements[i].classList.remove('active', 'current', 'spoken');
-            wordElements[i].classList.add('spoken');
+    function updRange(from, to) {
+        for (var i = from; i <= to && i < elements.length; i++) {
+            elements[i].classList.remove('active','current','spoken');
+            elements[i].classList.add('spoken');
         }
-        if (to >= 0 && to < wordElements.length) {
-            wordElements[to].classList.remove('spoken');
-            wordElements[to].classList.add('active', 'current');
+        if (to >= 0 && to < elements.length) {
+            elements[to].classList.remove('spoken');
+            elements[to].classList.add('active','current');
         }
     }
 
-    // ================================
-    //  语音识别（优化版：更快响应）
-    // ================================
-    function processSpokenText(spokenText) {
-        if (!isInitialized || words.length === 0) return;
-        var normalized = normalizeText(spokenText);
-        if (!normalized) return;
+    function matchText(spoken) {
+        if (!inited || !words.length) return;
+        var n = norm(spoken); if (!n) return;
+        var start = Math.max(0, currentIdx + 1), end = words.length, chars = n.split('');
+        var bestEnd = -1, bestLen = 0;
 
-        var searchStart = Math.max(0, currentWordIndex + 1);
-        var searchEnd = words.length;
-        var spokenChars = normalized.split('');
-
-        var bestMatchEnd = -1;
-        var bestMatchLen = 0;
-
-        for (var start = searchStart; start < searchEnd; start++) {
-            var matched = 0, sp = 0, wp = start;
-            while (sp < spokenChars.length && wp < searchEnd) {
-                var wChar = normalizeChar(words[wp].text);
-                var sChar = spokenChars[sp];
-                if (wChar === sChar) { matched++; sp++; wp++; }
+        for (var s = start; s < end; s++) {
+            var m = 0, sp = 0, wp = s;
+            while (sp < chars.length && wp < end) {
+                var wc = normC(words[wp].text), sc = chars[sp];
+                if (wc === sc) { m++; sp++; wp++; }
                 else {
-                    if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(wChar)) { wp++; continue; }
-                    if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(sChar)) { sp++; continue; }
+                    if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(wc)) { wp++; continue; }
+                    if (!/[\u4e00-\u9fffa-zA-Z0-9]/.test(sc)) { sp++; continue; }
                     break;
                 }
             }
-            if (matched > bestMatchLen) {
-                bestMatchLen = matched;
-                bestMatchEnd = start + matched - 1;
-            }
-            if (matched >= spokenChars.length) break;
+            if (m > bestLen) { bestLen = m; bestEnd = s + m - 1; }
+            if (m >= chars.length) break;
         }
 
-        if (bestMatchLen > 0 && bestMatchEnd > currentWordIndex) {
-            var newIndex = bestMatchEnd;
-            updateSpokenRange(currentWordIndex + 1, newIndex);
-            currentWordIndex = newIndex;
-            updateProgress();
-            scrollToWord(newIndex);
-
-            if (currentWordIndex >= words.length - 1) {
-                doneIndicator.classList.add('show');
-                setStatus('🎉 全部朗读完成！', 'highlight');
-                setTimeout(function() { if (isRecording) stopRecording(); }, 800);
+        if (bestLen > 0 && bestEnd > currentIdx) {
+            var ni = bestEnd;
+            updRange(currentIdx + 1, ni);
+            currentIdx = ni;
+            updProg();
+            scrollToWord(ni);
+            if (currentIdx >= words.length - 1) {
+                doneOverlay.classList.add('show');
+                setStatus('🎉 完成！', 'highlight');
+                setTimeout(function() { if (isRecording) stopMic(); }, 600);
             }
         }
     }
 
-    // ================================
-    // 语音识别初始化（优化版）
-    // ================================
-    function initRecognition() {
-        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            setStatus('⚠️ 浏览器不支持语音识别，请使用 Safari', 'error');
-            return false;
-        }
+    // ===== 语音识别（次要功能） =====
+    function initMic() {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { setStatus('⚠️ 不支持语音', 'error'); return false; }
+        recog = new SR();
+        recog.lang = 'zh-CN'; recog.continuous = true; recog.interimResults = true; recog.maxAlternatives = 3;
 
-        recognition = new SpeechRecognition();
-        recognition.lang = 'zh-CN';
-        recognition.continuous = true;
-        recognition.interimResults = true;  // 获取中间结果更快响应
-        recognition.maxAlternatives = 3;     // 减少备选数量提高速度
-
-        var lastProcessed = '';
-
-        recognition.onstart = function() {
-            setStatus('🎤 正在聆听...', 'highlight');
-            btnRecord.classList.add('recording');
-            isRecording = true;
-            lastProcessed = '';
+        recog.onstart = function() {
+            setStatus('🎤 聆听中...', 'highlight');
+            btnMic.classList.add('active','listening'); isRecording = true;
+            lastSpoken = '';
         };
 
-        recognition.onerror = function(event) {
-            if (event.error === 'no-speech') {
-                setStatus('🔇 未检测到声音', 'error');
-            } else if (event.error === 'aborted') {
-                if (isRecording) setStatus('⏸️ 已暂停', '');
-            } else if (event.error === 'audio-capture') {
-                setStatus('🎤 无法访问麦克风', 'error');
-                stopRecording();
-            } else if (event.error === 'not-allowed') {
-                setStatus('🚫 麦克风权限被拒绝', 'error');
-                stopRecording();
-            } else {
-                setStatus('❌ ' + event.error, 'error');
-                if (isRecording) {
-                    clearTimeout(speechRestartTimer);
-                    speechRestartTimer = setTimeout(function() {
-                        if (isRecording && recognition) try { recognition.start(); } catch(e) {}
-                    }, 300);
-                }
+        recog.onerror = function(e) {
+            if (e.error === 'no-speech') setStatus('🔇 未听到声音', 'error');
+            else if (e.error === 'aborted') { if (isRecording) setStatus('⏸', ''); }
+            else { setStatus('❌ ' + e.error, 'error'); stopMic(); }
+            if (isRecording && e.error !== 'aborted' && e.error !== 'not-allowed') {
+                clearTimeout(recogTimer);
+                recogTimer = setTimeout(function() { if (isRecording && recog) try { recog.start(); } catch(e) {} }, 300);
             }
         };
 
-        recognition.onend = function() {
-            if (isRecording && words.length > 0 && currentWordIndex < words.length - 1) {
-                clearTimeout(speechRestartTimer);
-                speechRestartTimer = setTimeout(function() {
-                    if (isRecording) {
-                        try { recognition.start(); } catch(e) { stopRecording(); }
-                    }
-                }, 150);  // 缩短重连延迟
-            } else {
-                stopRecording();
-            }
+        recog.onend = function() {
+            if (isRecording && inited && currentIdx < words.length - 1) {
+                clearTimeout(recogTimer);
+                recogTimer = setTimeout(function() { if (isRecording) try { recog.start(); } catch(e) { stopMic(); } }, 120);
+            } else { stopMic(); }
         };
 
-        recognition.onresult = function(event) {
-            var finalTranscript = '';
-            var interimTranscript = '';
-
-            for (var i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
+        recog.onresult = function(ev) {
+            var finalT = '', interimT = '';
+            for (var i = ev.resultIndex; i < ev.results.length; i++) {
+                if (ev.results[i].isFinal) finalT += ev.results[i][0].transcript;
+                else interimT += ev.results[i][0].transcript;
             }
-
-            // 处理最终结果
-            if (finalTranscript) {
-                var trimmed = finalTranscript.trim();
-                if (trimmed && trimmed !== lastProcessed) {
-                    lastProcessed = trimmed;
-                    processSpokenText(trimmed);
-                }
-            }
-            // 也尝试处理中间结果（加快响应速度）
-            if (!finalTranscript && interimTranscript) {
-                var interim = interimTranscript.trim();
-                if (interim && interim.length >= 2) {
-                    // 仅当中间结果长度足够才尝试匹配，避免过多误触发
-                    processSpokenText(interim);
-                }
-            }
+            if (finalT) { var t = finalT.trim(); if (t && t !== lastSpoken) { lastSpoken = t; matchText(t); } }
+            if (!finalT && interimT && interimT.trim().length >= 3) matchText(interimT.trim());
         };
-
         return true;
     }
 
-    // ================================
-    //  录制控制
-    // ================================
-    function startRecording() {
-        if (!isInitialized || words.length === 0) {
-            setStatus('📝 请先导入稿件', 'error');
-            if (navigator.vibrate) navigator.vibrate(20);
-            showTextModal();
-            return;
-        }
-        if (currentWordIndex >= words.length - 1) resetProgress();
-        if (recognition === null) { if (!initRecognition()) return; }
-        try { recognition.start(); }
-        catch(e) {
-            initRecognition();
-            try { recognition.start(); }
-            catch(e2) { setStatus('❌ 无法启动语音识别', 'error'); }
-        }
+    function startMic() {
+        if (!inited || !words.length) { setStatus('📝 先导入稿件', 'error'); showTextModal(); return; }
+        if (currentIdx >= words.length - 1) { resetAll(); }
+        if (!recog && !initMic()) return;
+        try { recog.start(); } catch(e) { initMic(); try { recog.start(); } catch(e2) { setStatus('❌ 启动失败', 'error'); } }
     }
 
-    function stopRecording() {
-        isRecording = false;
-        btnRecord.classList.remove('recording');
-        if (!doneIndicator.classList.contains('show')) setStatus('⏸️ 已暂停', '');
-        clearTimeout(speechRestartTimer);
-        if (recognition) { try { recognition.abort(); } catch(e) {} }
+    function stopMic() {
+        isRecording = false; btnMic.classList.remove('active','listening');
+        if (!doneOverlay.classList.contains('show')) setStatus('⏸', '');
+        clearTimeout(recogTimer);
+        if (recog) try { recog.abort(); } catch(e) {}
     }
 
-    function toggleRecording() {
-        if (isRecording) stopRecording(); else startRecording();
+    function toggleMic() {
+        if (isRecording) stopMic(); else startMic();
     }
 
-    // ================================
-    //  重置
-    // ================================
-    function resetProgress() {
-        currentWordIndex = -1;
-        for (var i = 0; i < wordElements.length; i++) { wordElements[i].className = 'word'; }
-        progressFill.style.width = '0%';
-        doneIndicator.classList.remove('show');
+    // ===== 重置 =====
+    function resetAll() {
+        currentIdx = -1;
+        for (var i = 0; i < elements.length; i++) elements[i].className = 'word';
+        prog.style.width = '0%'; doneOverlay.classList.remove('show');
         wrapper.scrollTo({ top: 0, behavior: 'smooth' });
-        setStatus('🔄 已重置，点击 🎤 重新开始', '');
+        setStatus('🔄 已重置', '');
+        if (isScrolling) { stopScroll(); }
     }
 
-    // ================================
-    //  文件导入
-    // ================================
-    function importTxtFile(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) { loadText(e.target.result); setStatus('📂 已导入: ' + file.name, 'highlight'); };
-        reader.onerror = function() { setStatus('❌ 文件读取失败', 'error'); };
-        reader.readAsText(file, 'UTF-8');
+    // ===== 文件 =====
+    function importFile(f) {
+        var r = new FileReader();
+        r.onload = function(e) { loadText(e.target.result); setStatus('📂 ' + f.name, 'highlight'); };
+        r.onerror = function() { setStatus('❌ 读取失败', 'error'); };
+        r.readAsText(f, 'UTF-8');
     }
 
-    // ================================
-    //  文字输入
-    // ================================
-    function showTextModal() {
-        textModal.classList.add('show');
-        textInput.value = '';
-        setTimeout(function() { textInput.focus(); }, 300);
-    }
-
+    // ===== 文字 =====
+    function showTextModal() { textModal.classList.add('show'); textInput.value = ''; setTimeout(function(){ textInput.focus(); }, 300); }
     function hideTextModal() { textModal.classList.remove('show'); textInput.blur(); }
-
-    function confirmTextInput() {
-        var text = textInput.value;
-        if (text.trim().length === 0) { setStatus('⚠️ 内容不能为空', 'error'); return; }
-        loadText(text);
-        hideTextModal();
-        setStatus('✏️ 已导入 (' + words.length + ' 词)', 'highlight');
+    function confirmText() {
+        var t = textInput.value;
+        if (!t.trim()) { setStatus('⚠️ 内容为空', 'error'); return; }
+        loadText(t); hideTextModal(); setStatus('✏️ 已导入 (' + words.length + ' 词)', 'highlight');
     }
 
-    // ================================
-    //  设置面板
-    // ================================
-    function showSettings() { settingsModal.classList.add('show'); }
-    function hideSettings() { settingsModal.classList.remove('show'); }
+    // ===== 设置 =====
+    function showSet() { settingsModal.classList.add('show'); }
+    function hideSet() { settingsModal.classList.remove('show'); }
 
-    // 字体大小
-    fontSizeSlider.addEventListener('input', function() {
-        var size = parseInt(this.value);
-        fontSizeValue.textContent = size;
-        teleprompter.style.fontSize = size + 'px';
-        try { localStorage.setItem('tp_fontSize', size); } catch(e) {}
-    });
+    fontSizeSlider.oninput = function() {
+        var v = parseInt(this.value); fontSizeVal.textContent = v;
+        root.style.setProperty('--tp-font-size', v + 'px');
+        try { localStorage.setItem('tp_fs', v); } catch(e) {}
+    };
 
-    // 字间距
-    letterSpacingSlider.addEventListener('input', function() {
-        var spacing = parseFloat(this.value);
-        letterSpacingValue.textContent = spacing.toFixed(1);
-        teleprompter.style.letterSpacing = spacing + 'px';
-        try { localStorage.setItem('tp_letterSpacing', spacing); } catch(e) {}
-    });
+    lineHeightSlider.oninput = function() {
+        var v = parseFloat(this.value).toFixed(1); lineHeightVal.textContent = v;
+        root.style.setProperty('--tp-line-height', v);
+        try { localStorage.setItem('tp_lh', v); } catch(e) {}
+    };
 
-    // 字体颜色
-    colorPresets.addEventListener('click', function(e) {
-        var preset = e.target.closest('.color-preset');
-        if (!preset) return;
-        var color = preset.dataset.color;
-        if (!color) return;
-        colorPresets.querySelectorAll('.color-preset').forEach(function(el) { el.classList.remove('active'); });
-        preset.classList.add('active');
-        applyFontColor(color);
-    });
+    letterSpaceSlider.oninput = function() {
+        var v = parseFloat(this.value).toFixed(1); letterSpaceVal.textContent = v;
+        tp.style.letterSpacing = v + 'px';
+        try { localStorage.setItem('tp_ls', v); } catch(e) {}
+    };
 
-    // 背景颜色
-    bgPresets.addEventListener('click', function(e) {
-        var preset = e.target.closest('.bg-preset');
-        if (!preset) return;
-        var bg = preset.dataset.bg;
-        if (!bg) return;
-        bgPresets.querySelectorAll('.bg-preset').forEach(function(el) { el.classList.remove('active'); });
-        preset.classList.add('active');
-        applyBgTheme(bg);
-        // 如果自定义了字体颜色，重新应用
-        if (currentColor !== 'default') applyFontColor(currentColor);
+    colorGrid.onclick = function(e) {
+        var d = e.target.closest('.color-dot'); if (!d) return;
+        var c = d.dataset.c; if (!c) return;
+        colorGrid.querySelectorAll('.color-dot').forEach(function(el) { el.classList.remove('active'); });
+        d.classList.add('active');
+        applyColor(c);
+        try { localStorage.setItem('tp_c', c); } catch(e) {}
+    };
+
+    bgGrid.onclick = function(e) {
+        var b = e.target.closest('.bg-box'); if (!b) return;
+        var bg = b.dataset.bg; if (!bg) return;
+        bgGrid.querySelectorAll('.bg-box').forEach(function(el) { el.classList.remove('active'); });
+        b.classList.add('active');
+        applyBg(bg);
+        if (currentColor !== 'default') applyColor(currentColor);
+        // Update status bar text color for light theme
         try { localStorage.setItem('tp_bg', bg); } catch(e) {}
-    });
+    };
 
-    // 自动下滑
-    autoScrollToggle.addEventListener('click', toggleAutoScroll);
-
-    autoScrollSpeedSlider.addEventListener('input', function() {
-        var val = parseInt(this.value);
-        autoScrollSpeedValue.textContent = val;
-        try { localStorage.setItem('tp_autoSpeed', val); } catch(e) {}
-        // 如果正在自动下滑，重新启动以应用新速度
-        if (isAutoScrolling) {
-            stopAutoScroll();
-            if (autoScrollToggle.classList.contains('active')) startAutoScroll();
-        }
-    });
-
-    // 设置按钮
-    btnSettings.addEventListener('click', showSettings);
-    settingsDone.addEventListener('click', hideSettings);
-    settingsModal.addEventListener('click', function(e) { if (e.target === this) hideSettings(); });
-
-    // 回到顶部
-    fabBackTop.addEventListener('click', goToTop);
-
-    // 检测滚动以显示/隐藏 FAB
-    teleprompter.addEventListener('scroll', updateFabVisibility);
-
-    // ================================
-    //  加载已保存的设置
-    // ================================
-    function loadSavedSettings() {
+    // ===== 加载设置 =====
+    function loadSet() {
         try {
-            var savedFontSize = localStorage.getItem('tp_fontSize');
-            if (savedFontSize) {
-                var size = parseInt(savedFontSize);
-                fontSizeSlider.value = size;
-                fontSizeValue.textContent = size;
-                teleprompter.style.fontSize = size + 'px';
-            }
-            var savedSpacing = localStorage.getItem('tp_letterSpacing');
-            if (savedSpacing) {
-                var spacing = parseFloat(savedSpacing);
-                letterSpacingSlider.value = spacing;
-                letterSpacingValue.textContent = spacing.toFixed(1);
-                teleprompter.style.letterSpacing = spacing + 'px';
-            }
-            var savedBg = localStorage.getItem('tp_bg');
-            if (savedBg) {
-                applyBgTheme(savedBg);
-                bgPresets.querySelectorAll('.bg-preset').forEach(function(el) {
-                    el.classList.toggle('active', el.dataset.bg === savedBg);
-                });
-            }
-            var savedColor = localStorage.getItem('tp_fontColor');
-            if (savedColor) {
-                applyFontColor(savedColor);
-                colorPresets.querySelectorAll('.color-preset').forEach(function(el) {
-                    el.classList.toggle('active', el.dataset.color === savedColor);
-                });
-            }
-            var savedAutoScroll = localStorage.getItem('tp_autoScroll');
-            if (savedAutoScroll === 'on') {
-                autoScrollToggle.classList.add('active');
-                autoScrollStatus.textContent = '开启';
-            }
-            var savedAutoSpeed = localStorage.getItem('tp_autoSpeed');
-            if (savedAutoSpeed) {
-                autoScrollSpeedSlider.value = savedAutoSpeed;
-                autoScrollSpeedValue.textContent = savedAutoSpeed;
-            }
+            var fs = localStorage.getItem('tp_fs');
+            if (fs) { var v = parseInt(fs); fontSizeSlider.value = v; fontSizeVal.textContent = v; root.style.setProperty('--tp-font-size', v+'px'); }
+            var lh = localStorage.getItem('tp_lh');
+            if (lh) { var v = parseFloat(lh).toFixed(1); lineHeightSlider.value = v; lineHeightVal.textContent = v; root.style.setProperty('--tp-line-height', v); }
+            var ls = localStorage.getItem('tp_ls');
+            if (ls) { var v = parseFloat(ls).toFixed(1); letterSpaceSlider.value = v; letterSpaceVal.textContent = v; tp.style.letterSpacing = v+'px'; }
+            var bg = localStorage.getItem('tp_bg');
+            if (bg) { applyBg(bg); bgGrid.querySelectorAll('.bg-box').forEach(function(el) { el.classList.toggle('active', el.dataset.bg === bg); }); }
+            var c = localStorage.getItem('tp_c');
+            if (c) { applyColor(c); colorGrid.querySelectorAll('.color-dot').forEach(function(el) { el.classList.toggle('active', el.dataset.c === c); }); }
         } catch(e) {}
     }
 
-    // ================================
-    //  事件绑定（其余）
-    // ================================
-    btnRecord.addEventListener('click', toggleRecording);
-    btnImportTxt.addEventListener('click', function() { fileInput.click(); });
-    fileInput.addEventListener('change', function(e) { if (this.files.length > 0) { importTxtFile(this.files[0]); } this.value = ''; });
-    btnPasteText.addEventListener('click', showTextModal);
-    modalCancel.addEventListener('click', hideTextModal);
-    modalConfirm.addEventListener('click', confirmTextInput);
-    textModal.addEventListener('click', function(e) { if (e.target === this) hideTextModal(); });
-    btnReset.addEventListener('click', resetProgress);
-    speedSlider.addEventListener('input', function() { speedValue.textContent = parseFloat(this.value).toFixed(1); });
-    textInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmTextInput(); } });
+    // ===== 事件 =====
+    btnScroll.onclick = toggleScroll;
+    scrollSpeed.oninput = function() {
+        var v = parseInt(this.value); scrollSpeedVal.textContent = v;
+        if (isScrolling) { stopScroll(); startScroll(); }
+    };
+    btnMic.onclick = toggleMic;
+    btnImport.onclick = function() { fileInput.click(); };
+    fileInput.onchange = function() { if (this.files.length) { importFile(this.files[0]); } this.value = ''; };
+    btnPaste.onclick = showTextModal;
+    modalCancel.onclick = hideTextModal;
+    modalConfirm.onclick = confirmText;
+    textModal.onclick = function(e) { if (e.target === this) hideTextModal(); };
+    btnReset.onclick = resetAll;
+    btnSettings.onclick = showSet;
+    settingsDone.onclick = hideSet;
+    settingsModal.onclick = function(e) { if (e.target === this) hideSet(); };
+    fabTop.onclick = goTop;
+    tp.onscroll = updFab;
+    textInput.onkeydown = function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmText(); } };
 
-    // 点击提词器手动跳转
-    teleprompter.addEventListener('click', function(e) {
-        var target = e.target.closest('.word');
-        if (!target) return;
-        var idx = parseInt(target.dataset.index);
-        if (isNaN(idx) || idx < 0 || idx >= wordElements.length) return;
-        if (isRecording) stopRecording();
-
-        // 清除所有高亮
-        for (var i = 0; i < wordElements.length; i++) { wordElements[i].className = 'word'; }
-
+    // 点击单词跳转
+    tp.onclick = function(e) {
+        var t = e.target.closest('.word'); if (!t) return;
+        var idx = parseInt(t.dataset.index);
+        if (isNaN(idx) || idx < 0 || idx >= elements.length) return;
+        if (isRecording) stopMic();
+        for (var i = 0; i < elements.length; i++) elements[i].className = 'word';
         if (idx === 0) {
-            currentWordIndex = -1;
-            updateProgress();
-            wrapper.scrollTo({ top: 0, behavior: 'smooth' });
-            setStatus('🔄 已跳转到开头', '');
+            currentIdx = -1; updProg(); wrapper.scrollTo({top:0,behavior:'smooth'});
+            setStatus('🔄 回到开头', '');
         } else {
-            for (var i = 0; i <= idx; i++) { wordElements[i].classList.add('spoken'); }
-            wordElements[idx].classList.remove('spoken');
-            wordElements[idx].classList.add('active', 'current');
-            currentWordIndex = idx;
-            updateProgress();
-            scrollToWord(idx);
-            setStatus('👆 已跳转到 ' + (idx + 1) + '/' + words.length, '');
+            for (var i = 0; i <= idx; i++) elements[i].classList.add('spoken');
+            elements[idx].classList.remove('spoken'); elements[idx].classList.add('active','current');
+            currentIdx = idx; updProg(); scrollToWord(idx);
+            setStatus('👆 ' + (idx+1) + '/' + words.length, '');
         }
-        doneIndicator.classList.remove('show');
-    });
+        doneOverlay.classList.remove('show');
+    };
 
-    // 防止 iOS 回弹手势
+    // iOS 回弹
     document.addEventListener('touchmove', function(e) {
-        if (e.target.closest('#teleprompter') || e.target.closest('.modal')) return;
-    }, { passive: true });
+        if (!e.target.closest('#tp-content') && !e.target.closest('.modal')) e.preventDefault();
+    }, { passive: false });
 
-    // ================================
-    //  初始化
-    // ================================
-    loadSavedSettings();
-    showEmptyState();
-    setStatus('💡 准备就绪，请导入稿件', '');
+    // ===== 初始化 =====
+    loadSet();
+    showEmpty();
+    setStatus('💡 准备就绪', '');
 
     if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
         if (location.hostname === '' || location.hostname === 'file://') {
-            setStatus('⚠️ 使用 iPhone 时请部署到 HTTPS 服务器', 'error');
+            setStatus('⚠️ 部署到 HTTPS 使用语音', 'error');
         }
     }
 
-    console.log('🎤 AI 提词器 v2.0 已启动');
-    console.log('📌 新功能: 自动下滑 | 字体颜色 | 回到顶部 | 更快语音识别');
-
+    console.log('🎤 AI提词器 v3.0 — 自动下滑为主·语音为辅');
 })();
 </script>
 
